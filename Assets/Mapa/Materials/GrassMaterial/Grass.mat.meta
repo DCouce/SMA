@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f4240c2c8ff2e48489ba13619192a279
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 255413
+  packageName: General CityBuilder
+  packageVersion: 1.0
+  assetPath: Assets/General CityBuilder/Resources/Materials/GrassMaterial/Grass.mat
+  uploadId: 599978

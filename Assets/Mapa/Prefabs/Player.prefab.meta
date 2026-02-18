@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 91dd711839198f44daf36015a4568dd7
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 255413
+  packageName: General CityBuilder
+  packageVersion: 1.0
+  assetPath: Assets/General CityBuilder/Resources/Prefabs/Player.prefab
+  uploadId: 599978
