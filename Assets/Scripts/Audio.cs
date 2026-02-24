@@ -15,7 +15,7 @@ public class Audio : MonoBehaviour
     public float noiseLevel = 0f;
 
     private PlayerController player;
-
+    public float baseDetectionRange = 5f;
     void Start()
     {
         player = GetComponent<PlayerController>();
@@ -26,6 +26,7 @@ public class Audio : MonoBehaviour
     {
         PlaySound(jumpSound, 1.0f);
         noiseLevel = 2.0f;
+        NotifyAgents();
     }
 
     public void OnFootstep()
@@ -38,6 +39,8 @@ public class Audio : MonoBehaviour
         {
             PlayRandomFromList(runClips, runVolume);
             noiseLevel = 1.0f;
+            NotifyAgents();
+
         }
         else
         {
@@ -50,6 +53,7 @@ public class Audio : MonoBehaviour
     {
         PlayRandomFromList(landingClips, runVolume + 0.2f);
         noiseLevel = 2.0f;
+        NotifyAgents();
     }
 
     private void PlayRandomFromList(AudioClip[] list, float volume)
@@ -69,6 +73,28 @@ public class Audio : MonoBehaviour
     
     void Update()
     {
-        if (noiseLevel > 0) noiseLevel -= Time.deltaTime * 2f;
+        if (noiseLevel > 0) 
+
+        noiseLevel -= Time.deltaTime * 2f;
     }
+
+   private void NotifyAgents()
+    {
+    // El error suele estar aquí: hay que usar transform.position
+    float finalRange = baseDetectionRange * noiseLevel;
+
+    // CORRECCIÓN: Usar transform.position (la ubicación del objeto en el mundo)
+    Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange);
+
+    foreach (var obj in closeObjects)
+    {
+        Guardia scriptGuardia = obj.GetComponent<Guardia>();
+
+        if (scriptGuardia != null)
+        {
+            // CORRECCIÓN: Aquí también enviamos transform.position
+            scriptGuardia.OnHeardSound(transform.position);
+        }
+    }
+}
 }
