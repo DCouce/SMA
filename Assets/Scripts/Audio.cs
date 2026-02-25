@@ -16,6 +16,7 @@ public class Audio : MonoBehaviour
 
     private PlayerController player;
     public float baseDetectionRange = 5f;
+    public LayerMask capaGuardias;
     void Start()
     {
         player = GetComponent<PlayerController>();
@@ -46,6 +47,7 @@ public class Audio : MonoBehaviour
         {
             PlayRandomFromList(walkClips, walkVolume);
             noiseLevel = 0.4f;
+            NotifyAgents();
         }
     }
 
@@ -84,7 +86,7 @@ public class Audio : MonoBehaviour
     float finalRange = baseDetectionRange * noiseLevel;
 
     // CORRECCIÓN: Usar transform.position (la ubicación del objeto en el mundo)
-    Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange);
+    Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange, capaGuardias);
 
     foreach (var obj in closeObjects)
     {

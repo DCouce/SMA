@@ -51,19 +51,23 @@ public class Guardia : MonoBehaviour
         navegacion.Patrullar();
     }
     }
-    public void OnHeardSound(Vector3 posicion)
+    public void OnHeardSound(Vector3 posicionRealDelRuido)
     {
         // Solo investigamos si NO estamos viendo al jugador actualmente
         if (!sensor.DetectarYSeguirConLaMirada())
         {
-            Debug.Log("te oigo");
+            Debug.Log("He oído algo por allá...");
             investigandoRuido = true;
-            puntoDelRuido = posicion;
             cronometroInvestigacion = tiempoInvestigacion;
             
-            Vector3 searchPoint = puntoDelRuido + (Random.insideUnitSphere * 3f);// Mirar mejor forma de hacer eso
-            searchPoint.y = puntoDelRuido.y; 
-            agent.SetDestination(searchPoint);
+            float radioDeIncertidumbre = 5f; // Radio dentro del cual el guardia "cree" que está el ruido
+                        
+            Vector3 posicionEstimadaDelRuido = posicionRealDelRuido + (Random.insideUnitSphere * radioDeIncertidumbre);
+            
+            // Debug.DrawLine(posicionRealDelRuido, posicionEstimadaDelRuido, Color.red, 2f); PARA PROBAR
+            
+            posicionEstimadaDelRuido.y = posicionRealDelRuido.y; 
+            agent.SetDestination(posicionEstimadaDelRuido);
         }
     }
   

@@ -20,6 +20,12 @@ public class PlayerController : MonoBehaviour
     private Vector3 airInertia;   
     private bool isRunning;
 
+    [Header("Robo")]
+    public LayerMask capaCuadro;
+    public Transform puntoMochila;
+    public GameObject textoE;
+
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -114,6 +120,17 @@ public class PlayerController : MonoBehaviour
         }
 
         UpdateAnimator();
+
+        Collider[] hit = Physics.OverlapSphere(transform.position, 0.5f, capaCuadro);
+        bool cerca = hit.Length > 0;
+
+        textoE.SetActive(cerca);
+
+        if (cerca && Input.GetKeyDown(KeyCode.E)) {
+            if (hit[0].TryGetComponent<Cuadro>(out Cuadro cuadro)) {
+                cuadro.SerRobado(puntoMochila);
+            }
+        }    
     }
 
     private void UpdateAnimator()
