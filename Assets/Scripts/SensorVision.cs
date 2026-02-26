@@ -51,4 +51,34 @@ public class SensorVision : MonoBehaviour
         Quaternion rotacionObjetivo = Quaternion.LookRotation(direccion);
         transform.rotation = Quaternion.Slerp(transform.rotation, rotacionObjetivo, Time.deltaTime * velocidadGiroManual);
     }
+
+    // REVISAR, SOLO PARA DEBUGGING: Dibuja el cono de visión en la escena
+    private void OnDrawGizmos()
+{
+    // 1. Dibujar el rango de distancia (Círculo amarillo)
+    Gizmos.color = Color.yellow;
+    // Dibujamos una esfera de cables para ver el área total de alcance
+    Gizmos.DrawWireSphere(transform.position, rangoVision);
+
+    // 2. Calcular las líneas que forman el ángulo del cono
+    // Usamos el forward del objeto y lo rotamos hacia la izquierda y derecha
+    Vector3 lineaDerecha = Quaternion.AngleAxis(anguloVision, transform.up) * transform.forward;
+    Vector3 lineaIzquierda = Quaternion.AngleAxis(-anguloVision, transform.up) * transform.forward;
+
+    // 3. Dibujar las líneas del cono (Rojo para el ángulo de visión)
+    Gizmos.color = Color.red;
+    Gizmos.DrawRay(transform.position, lineaDerecha * rangoVision);
+    Gizmos.DrawRay(transform.position, lineaIzquierda * rangoVision);
+
+    // 4. Línea opcional hacia el objetivo si está a la vista
+    if (objetivo != null)
+    {
+        float distancia = Vector3.Distance(transform.position, objetivo.position);
+        if (distancia < rangoVision)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(transform.position, objetivo.position);
+        }
+    }
+}
 }
