@@ -10,5 +10,4 @@ public class AnimationBridge : MonoBehaviour
     }
 
     public void OnFootstep() => audioManager?.OnFootstep();
-    public void OnLanding() => audioManager?.OnLanding();
 }

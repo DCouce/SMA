@@ -3,11 +3,9 @@ using UnityEngine;
 public class Audio : MonoBehaviour
 {
     public AudioSource audioSource;
-    public AudioClip jumpSound;
     
     public AudioClip[] walkClips;    
     public AudioClip[] runClips;   
-    public AudioClip[] landingClips; 
     
     public float walkVolume = 0.4f;
     public float runVolume = 0.8f;
@@ -17,23 +15,16 @@ public class Audio : MonoBehaviour
     private PlayerController player;
     public float baseDetectionRange = 5f;
     public LayerMask capaGuardias;
+
     void Start()
     {
         player = GetComponent<PlayerController>();
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
-    public void PlayJumpSound()
-    {
-        PlaySound(jumpSound, 1.0f);
-        noiseLevel = 2.0f;
-        NotifyAgents();
-    }
-
     public void OnFootstep()
     {
         if (!player.IsGrounded()) return;
-
         if (!player.IsMoving()) return; 
 
         if (player.IsRunning())
@@ -41,7 +32,6 @@ public class Audio : MonoBehaviour
             PlayRandomFromList(runClips, runVolume);
             noiseLevel = 1.0f;
             NotifyAgents();
-
         }
         else
         {
@@ -49,13 +39,6 @@ public class Audio : MonoBehaviour
             noiseLevel = 0.4f;
             NotifyAgents();
         }
-    }
-
-    public void OnLanding()
-    {
-        PlayRandomFromList(landingClips, runVolume + 0.2f);
-        noiseLevel = 2.0f;
-        NotifyAgents();
     }
 
     private void PlayRandomFromList(AudioClip[] list, float volume)
@@ -67,36 +50,25 @@ public class Audio : MonoBehaviour
             audioSource.PlayOneShot(list[index], volume);
         }
     }
-
-    private void PlaySound(AudioClip clip, float volume)
-    {
-        if (clip != null) audioSource.PlayOneShot(clip, volume);
-    }
     
     void Update()
     {
         if (noiseLevel > 0) 
-
-        noiseLevel -= Time.deltaTime * 2f;
+            noiseLevel -= Time.deltaTime * 2f;
     }
 
-   private void NotifyAgents()
+    private void NotifyAgents()
     {
-    // El error suele estar aquí: hay que usar transform.position
-    float finalRange = baseDetectionRange * noiseLevel;
+        float finalRange = baseDetectionRange * noiseLevel;
+        Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange, capaGuardias);
 
-    // CORRECCIÓN: Usar transform.position (la ubicación del objeto en el mundo)
-    Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange, capaGuardias);
-
-    foreach (Collider obj in closeObjects)
-    {
-        Guardia scriptGuardia = obj.GetComponent<Guardia>();
-
-        if (scriptGuardia != null)
+        foreach (Collider obj in closeObjects)
         {
-            // CORRECCIÓN: Aquí también enviamos transform.position
-            scriptGuardia.OnHeardSound(transform.position);
+            Guardia scriptGuardia = obj.GetComponent<Guardia>();
+            if (scriptGuardia != null)
+            {
+                scriptGuardia.OnHeardSound(transform.position);
+            }
         }
     }
-}
 }
