@@ -88,7 +88,7 @@ public class Audio : MonoBehaviour
     // CORRECCIÓN: Usar transform.position (la ubicación del objeto en el mundo)
     Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange, capaGuardias);
 
-    foreach (var obj in closeObjects)
+    foreach (Collider obj in closeObjects)
     {
         Guardia scriptGuardia = obj.GetComponent<Guardia>();
 
