@@ -13,12 +13,16 @@ public class Audio : MonoBehaviour
     public float noiseLevel = 0f;
 
     private PlayerController player;
+    private Oido oido;
+
     public float baseDetectionRange = 5f;
     public LayerMask capaGuardias;
 
     void Start()
     {
         player = GetComponent<PlayerController>();
+        oido = GetComponent<Oido>();
+
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
@@ -57,18 +61,24 @@ public class Audio : MonoBehaviour
             noiseLevel -= Time.deltaTime * 2f;
     }
 
-    private void NotifyAgents()
+   private void NotifyAgents()
     {
-        float finalRange = baseDetectionRange * noiseLevel;
-        Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange, capaGuardias);
+    // El error suele estar aquí: hay que usar transform.position
+    float finalRange = baseDetectionRange * noiseLevel;
 
-        foreach (Collider obj in closeObjects)
+    // CORRECCIÓN: Usar transform.position (la ubicación del objeto en el mundo)
+    Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange, capaGuardias);
+
+    foreach (Collider obj in closeObjects)
+    {
+        Guardia scriptGuardia = obj.GetComponent<Guardia>();
+        Oido oido = scriptGuardia.GetComponent<Oido>();
+
+        if (scriptGuardia != null)
         {
-            Guardia scriptGuardia = obj.GetComponent<Guardia>();
-            if (scriptGuardia != null)
-            {
-                scriptGuardia.OnHeardSound(transform.position);
-            }
+            // CORRECCIÓN: Aquí también enviamos transform.position
+            oido.OnHeardSound(transform.position);
         }
     }
+}
 }
