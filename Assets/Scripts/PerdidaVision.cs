@@ -38,53 +38,31 @@ public class PerdidaVision : MonoBehaviour
     }
     public void ReaccionarAPerdidaDeVision()
     {
-        
-        
-        
-        if (Vector3.Distance(transform.position, cuadro.position)<5)
+        // El guardia vio al ladrón y sabe que LLEVA el cuadro
+        if (guardia.robado)
         {
-            // CASO CERCA: Investigación exhaustiva
+            Debug.Log("Ladrón perdido CON el cuadro. Asegurando la salida.");
             investigar.radio = 3; 
-            investigar.puntos = 8;
-            Debug.Log("Estaba cerca, busco a fondo");
-            if(!guardia.robado){
-            if(investigar.puntos_investigacion.Count ==0){
-            investigar.GenerateNewPatrolPath(transform.position);
+            investigar.puntos = 5;
+            agent.SetDestination(salida.position);
+            
+            if (investigar.puntos_investigacion.Count == 0)
+            {
+                investigar.GenerateNewPatrolPath(salida.position);
             }
-            }
-            else if(guardia.robado){
-            if(investigar.puntos_investigacion.Count ==0){
-            investigar.GenerateNewPatrolPath(transform.position);
-            }
-            }
-
-
         }
+        // El guardia vio al ladrón pero NO LLEVABA el cuadro
         else
         {
-            // CASO LEJOS: Mirar un poco y rendirse
-            investigar.radio = 2;
-            investigar.puntos = 4;
-            Debug.Log("Estaba lejos, solo echo un vistazo");
-            if (!guardia.robado){
+            Debug.Log("Ladrón perdido SIN el cuadro. Revisando la zona del botín.");
+            investigar.radio = 3;
+            investigar.puntos = 5;
             agent.SetDestination(cuadro.position);
-            guardia.visto_recientemente = true;
-            if(investigar.puntos_investigacion.Count ==0){
-
-            investigar.GenerateNewPatrolPath(cuadro.position);
-            }
-            }
-            else if (guardia.robado){
-            agent.SetDestination(salida.position);
-            guardia.visto_recientemente = true;
-            if(investigar.puntos_investigacion.Count ==0){
-
-            investigar.GenerateNewPatrolPath(salida.position);
-            }
+            
+            if (investigar.puntos_investigacion.Count == 0)
+            {
+                investigar.GenerateNewPatrolPath(cuadro.position);
             }
         }
-
-        
-    
     }
 }

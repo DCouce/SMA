@@ -36,7 +36,13 @@ public class Oido : MonoBehaviour
     }
 
     public void OnHeardSound(Vector3 posicionRealDelRuido)
-    {
+    {   
+        // NUEVO: Si estamos en cooldown por haber visto a un colega, somos sordos temporalmente
+        if (guardia.cooldownIgnorarCompaneros > 0) 
+        {
+            return; 
+        }
+        
         // Solo investigamos si NO estamos viendo al jugador actualmente
         if(Time.time - tiempoUltimoSonidoGuardia >5){
         if (!sensor.DetectarYSeguirConLaMirada() )

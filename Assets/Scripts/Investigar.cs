@@ -54,22 +54,23 @@ public class Investigar : MonoBehaviour
     {
         if (puntos_investigacion.Count == 0) 
         {
-            if (sentido == "oido"){
-            guardia.investigandoRuido = false;
+            if (sentido == "oido")
+            {
+                guardia.investigandoRuido = false;
+                // NUEVO: Terminé de investigar, no vi a nadie. Me quedo sordo 5 segundos para poder irme de aquí sin que me molesten.
+                guardia.cooldownIgnorarCompaneros = 5f; 
             }
             else if (sentido == "vista")
             {
-            guardia.visto_recientemente = false;
+                guardia.visto_recientemente = false;
             }
         }
-        if (agent.remainingDistance < 0.7f && !agent.pathPending &&puntos_investigacion.Count != 0) 
+        
+        if (agent.remainingDistance < 0.7f && !agent.pathPending && puntos_investigacion.Count != 0) 
         {
-           
             agent.destination = puntos_investigacion[0];
             puntos_investigacion.RemoveAt(0);
         }
-        
-
     }
 
     void OnDrawGizmos()
