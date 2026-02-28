@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
 
     private CharacterController controller;
     private Animator anim;
-    private Audio audioManager; 
+    private Audio audioManager;
 
     private Vector3 movementInput;
     private Vector3 velocity;      
