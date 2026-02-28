@@ -71,7 +71,7 @@ public class Guardia : MonoBehaviour
 
 
             if (!agent.pathPending ){
-            perdida.ReaccionarAPerdidaDeVisionRobado();
+            perdida.ReaccionarAPerdidaDeVision();
             investigar.Investigacion("vista");
             }
         }
