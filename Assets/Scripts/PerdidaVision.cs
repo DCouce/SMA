@@ -22,8 +22,6 @@ public class PerdidaVision : MonoBehaviour
     private Vector3  ultimaPosicionEscuchada;
 
     private float tiempoUltimoSonido;
-    private float tiempoUltimoSonidoGuardia = 0;
-
     private NavegacionPatrulla navegacion;
 
 

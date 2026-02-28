@@ -4,11 +4,17 @@ public class SensorVision : MonoBehaviour
 {
     public Transform objetivo;
     public Transform[] guardias;
+    public float rangoCaptura = 0.2f;
     public float rangoVision = 15f;
     public float anguloVision = 45f;
     public float velocidadGiroManual = 5f;
     private Guardia guardia;
     private PlayerController player;
+
+    // Visión del cuadro
+    public Transform posicionBaseCuadro;
+    public Transform cuadroFisico;
+
 
     void Start()
     {
@@ -18,17 +24,24 @@ public class SensorVision : MonoBehaviour
     }
     void Update()
     {
-        if (DetectarYSeguirConLaMirada())
-        {
-            guardia.en_vision = true;
+        // Se actualiza la visión según un booleano
+        guardia.en_vision = DetectarYSeguirConLaMirada();
 
-        }
-        else
-        {
-            guardia.en_vision = false;
-        }
+        // Solo estará en rango de captura si lo estamos viendo Y además está cerca
+        guardia.en_rango_captura = guardia.en_vision && EnRangoDeCaptura(rangoCaptura);
 
+        if (!guardia.robado && VerFaltaCuadro()) // Por eficiencia, solo lo revisará si aún no sabe que fue robado
+        {
+            Debug.Log("Falta el Cuadro");
+            guardia.robado = true;
+        }
     }
+
+    public bool VerFaltaCuadro()
+    {
+        return (Vector3.Distance(cuadroFisico.position, posicionBaseCuadro.position) > 0.1f) && EstaEnConoDeVision(posicionBaseCuadro, true);
+    }
+
     public bool DetectarYSeguirConLaMirada()
     {
         if (objetivo == null) return false;
@@ -59,7 +72,7 @@ public class SensorVision : MonoBehaviour
         return false;
         
     }
-    private bool EstaEnConoDeVision(Transform objetivo)
+    private bool EstaEnConoDeVision(Transform objetivo, bool esPuntoVacio = false)
     {
         float distancia = Vector3.Distance(transform.position, objetivo.position);
         if (distancia > rangoVision) return false;
@@ -71,10 +84,19 @@ public class SensorVision : MonoBehaviour
         {
             RaycastHit hit;
             // Raycast para evitar ver a través de paredes
-            if (Physics.Raycast(transform.position + Vector3.up * 0.05f, direccionAlObjetivo, out hit, rangoVision))
+            if (Physics.Raycast(transform.position + Vector3.up * 0.05f, direccionAlObjetivo, out hit, rangoVision, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
-                return hit.transform == objetivo;
+                if (esPuntoVacio)
+                {
+                    return hit.distance >= (distancia - 0.05f);
+                }
+                else
+                {   // Para el ladrón, debe chocar con él
+                    return hit.transform == objetivo;
+                }
             }
+            // No choca con nada, también lo ve si era punto vacío
+            return esPuntoVacio;
         }
         return false;
     }
@@ -85,6 +107,11 @@ public class SensorVision : MonoBehaviour
         direccion.y = 0;
         Quaternion rotacionObjetivo = Quaternion.LookRotation(direccion);
         transform.rotation = Quaternion.Slerp(transform.rotation, rotacionObjetivo, Time.deltaTime * velocidadGiroManual);
+    }
+
+    public bool EnRangoDeCaptura(float rangoCaptura)
+    {
+        return Vector3.Distance(transform.position, objetivo.position) <= rangoCaptura;
     }
 
     // REVISAR, SOLO PARA DEBUGGING: Dibuja el cono de visión en la escena

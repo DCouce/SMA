@@ -15,14 +15,17 @@ public class Guardia : MonoBehaviour
     public bool investigandoRuido;
     public bool robado = false;
     public bool en_vision = false;
+    public bool en_rango_captura = false;
     public bool visto_recientemente = false;
     public int ignorar_ruido = 0;
 
     public Vector3 puntoDelRuido;
 
     public float velocidadPatrulla = 0.5f;
-    public float velocidadPersecucion = 1f;
+    public float velocidadPersecucion = 0.8f;
     public float cooldownIgnorarCompaneros = 0f;
+
+    public GameObject panelDerrota;
 
     void Start()
     {
@@ -52,7 +55,14 @@ public class Guardia : MonoBehaviour
             anim.SetFloat("Speed", agent.velocity.magnitude);
         }
 
-        if (en_vision)
+        // CAPA REACTIVA (basada en sensores directos)
+        if (en_rango_captura)
+        {
+            // Es necesaria la acción "Capturar()"
+            panelDerrota.SetActive(true);
+
+        }
+        else if (en_vision)
         {
             agent.speed = velocidadPersecucion; 
             navegacion.Perseguir(sensor.objetivo.position);
@@ -79,6 +89,8 @@ public class Guardia : MonoBehaviour
                 investigar.Investigacion("oido");
             }
         }
+
+        // CAPA PLANIFICACIÓN
         else if (visto_recientemente && !en_vision)
         {
             agent.updateRotation = true;
