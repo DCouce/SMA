@@ -1,53 +1,73 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Audio : MonoBehaviour
 {
     public AudioSource audioSource;
     
+    [Header("Sonidos (Opcional para Guardias)")]
     public AudioClip[] walkClips;    
     public AudioClip[] runClips;   
-    
     public float walkVolume = 0.4f;
     public float runVolume = 0.8f;
 
+    [Header("Configuración de Ruido")]
+    public float baseDetectionRange = 5f;
+    public LayerMask capaQueEscucha; // Capas de guardias y elementos del mapa
     public float noiseLevel = 0f;
 
+    // Referencias automáticas
     private PlayerController player;
-    private Oido oido;
-
-    public float baseDetectionRange = 5f;
-    public LayerMask capaGuardias;
+    private NavMeshAgent agent; 
 
     void Start()
     {
         player = GetComponent<PlayerController>();
-        oido = GetComponent<Oido>();
+        agent = GetComponent<NavMeshAgent>();
 
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
     public void OnFootstep()
     {
-        if (!player.IsGrounded()) return;
-        if (!player.IsMoving()) return; 
+        bool esJugador = (player != null);
+        bool moviendose = false;
+        bool corriendo = false;
 
-        if (player.IsRunning())
+        // 1. Detectar movimiento según quién sea
+        if (esJugador)
         {
-            PlayRandomFromList(runClips, runVolume);
-            noiseLevel = 1.0f;
-            NotifyAgents();
+            if (!player.IsGrounded() || !player.IsMoving()) return;
+            moviendose = true;
+            corriendo = player.IsRunning();
         }
-        else
+        else if (agent != null) // Es un Guardia
         {
-            PlayRandomFromList(walkClips, walkVolume);
-            noiseLevel = 0.4f;
-            NotifyAgents();
+            if (agent.velocity.magnitude < 0.1f) return;
+            moviendose = true;
+            corriendo = agent.velocity.magnitude > 1.5f; 
         }
+
+        if (!moviendose) return;
+
+        // 2. Ejecutar Sonido Físico (Solo si hay clips y AudioSource)
+        // Para los guardias, puedes dejar los clips vacíos en el Inspector y no sonará nada.
+        float volumenActual = corriendo ? runVolume : walkVolume;
+        AudioClip[] clipsActuales = corriendo ? runClips : walkClips;
+
+        if (clipsActuales.Length > 0)
+        {
+            PlayRandomFromList(clipsActuales, volumenActual);
+        }
+
+        // 3. Notificar al mundo (Ruido Interno)
+        noiseLevel = corriendo ? 1.0f : 0.4f;
+        NotifyAgents();
     }
 
     private void PlayRandomFromList(AudioClip[] list, float volume)
     {
-        if (list.Length > 0 && audioSource != null)
+        if (audioSource != null && list.Length > 0)
         {
             int index = Random.Range(0, list.Length);
             audioSource.pitch = Random.Range(0.9f, 1.1f);
@@ -57,28 +77,30 @@ public class Audio : MonoBehaviour
     
     void Update()
     {
+        // El nivel de ruido se disipa con el tiempo
         if (noiseLevel > 0) 
             noiseLevel -= Time.deltaTime * 2f;
     }
 
-   private void NotifyAgents()
+    private void NotifyAgents()
     {
-    // El error suele estar aquí: hay que usar transform.position
-    float finalRange = baseDetectionRange * noiseLevel;
+        float finalRange = baseDetectionRange * noiseLevel;
+        Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange, capaQueEscucha);
 
-    // CORRECCIÓN: Usar transform.position (la ubicación del objeto en el mundo)
-    Collider[] closeObjects = Physics.OverlapSphere(transform.position, finalRange, capaGuardias);
-
-    foreach (Collider obj in closeObjects)
-    {
-        Guardia scriptGuardia = obj.GetComponent<Guardia>();
-        Oido oido = scriptGuardia.GetComponent<Oido>();
-
-        if (scriptGuardia != null)
+        foreach (Collider obj in closeObjects)
         {
-            // CORRECCIÓN: Aquí también enviamos transform.position
-            oido.OnHeardSound(transform.position);
+            // Evitar que el guardia se escuche a sí mismo
+            if (obj.gameObject == this.gameObject) continue;
+
+            // Si es un Guardia, activa su oído
+            if (obj.TryGetComponent<Oido>(out Oido oido))
+            {
+                oido.OnHeardSound(transform.position);
+            }
+
+            // Si es un elemento del mapa (como el Torii o sensores), activa su lógica
+            // Buscamos cualquier script que tenga el método "AlRecibirRuido"
+            obj.SendMessage("AlRecibirRuido", transform.position, SendMessageOptions.DontRequireReceiver);
         }
     }
-}
 }
