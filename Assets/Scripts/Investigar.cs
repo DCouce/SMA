@@ -50,11 +50,17 @@ public class Investigar : MonoBehaviour
         return center; 
     }
 
-    public void Investigacion()
+    public void Investigacion(string sentido)
     {
         if (puntos_investigacion.Count == 0) 
         {
+            if (sentido == "oido"){
             guardia.investigandoRuido = false;
+            }
+            else if (sentido == "vista")
+            {
+            guardia.visto_recientemente = false;
+            }
         }
         if (agent.remainingDistance < 0.7f && !agent.pathPending &&puntos_investigacion.Count != 0) 
         {
