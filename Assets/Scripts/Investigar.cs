@@ -8,15 +8,17 @@ public class Investigar : MonoBehaviour
     public int radio = 2;   
     public int puntos = 3;        
 
-    private List<Vector3> puntos_investigacion = new List<Vector3>();
+    public List<Vector3> puntos_investigacion = new List<Vector3>();
 
     private NavMeshAgent agent;
     private Guardia guardia;
+    private SensorVision sensor;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         guardia = GetComponent<Guardia>();
+        sensor = GetComponent<SensorVision>();
     }
 
     public void GenerateNewPatrolPath(Vector3 posicion)
@@ -56,7 +58,7 @@ public class Investigar : MonoBehaviour
         }
         if (agent.remainingDistance < 0.7f && !agent.pathPending &&puntos_investigacion.Count != 0) 
         {
-            
+           
             agent.destination = puntos_investigacion[0];
             puntos_investigacion.RemoveAt(0);
         }

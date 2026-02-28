@@ -3,28 +3,63 @@ using UnityEngine;
 public class SensorVision : MonoBehaviour
 {
     public Transform objetivo;
+    public Transform[] guardias;
     public float rangoVision = 15f;
     public float anguloVision = 45f;
     public float velocidadGiroManual = 5f;
+    private Guardia guardia;
+    private PlayerController player;
 
+    void Start()
+    {
+        guardia = GetComponent<Guardia>();
+        player = objetivo.GetComponent<PlayerController>();
+
+    }
+    void Update()
+    {
+        if (DetectarYSeguirConLaMirada())
+        {
+            guardia.en_vision = true;
+
+        }
+        else
+        {
+            guardia.en_vision = false;
+        }
+
+    }
     public bool DetectarYSeguirConLaMirada()
     {
         if (objetivo == null) return false;
 
         // 1. Intentamos ver si está en el cono actual
-        bool enCono = EstaEnConoDeVision();
+        bool enCono = EstaEnConoDeVision(objetivo);
 
         // 2. Si lo vemos (o si estaba justo en el borde), giramos hacia él
         // Esto hace que el "cono" se mueva, permitiendo que la persecución continúe
         if (enCono)
         {
             GirarSuavementeHacia(objetivo.position);
+            guardia.robado = player.robado;
         }
 
         return enCono;
     }
+    public bool VerGuardia()
+    {
+        foreach (Transform obj in guardias)
+        {
+            if (EstaEnConoDeVision(obj))
+            {
+                return true;
+            }
 
-    private bool EstaEnConoDeVision()
+        }  
+        return false;
+        
+    }
+    private bool EstaEnConoDeVision(Transform objetivo)
     {
         float distancia = Vector3.Distance(transform.position, objetivo.position);
         if (distancia > rangoVision) return false;

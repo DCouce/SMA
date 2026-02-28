@@ -12,6 +12,10 @@ public class Guardia : MonoBehaviour
     private Animator anim;
 
     public bool investigandoRuido;
+    public bool robado = false;
+    public bool en_vision = false;
+    public int ignorar_ruido = 0;
+
     public Vector3 puntoDelRuido;
 
     public float velocidadPatrulla = 0.5f;
@@ -33,7 +37,7 @@ public class Guardia : MonoBehaviour
             anim.SetFloat("Speed", agent.velocity.magnitude);
         }
 
-        if (sensor.DetectarYSeguirConLaMirada())
+        if (en_vision)
         {
             agent.speed = velocidadPersecucion; 
             
@@ -44,6 +48,7 @@ public class Guardia : MonoBehaviour
         }
         else if (investigandoRuido)
         {   
+            
             agent.speed = velocidadPatrulla; 
             
             agent.updateRotation = true;
@@ -52,6 +57,7 @@ public class Guardia : MonoBehaviour
                 Debug.Log(investigandoRuido);
                 investigar.Investigacion();
             }
+            
         }
         else
         {

@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 movementInput;
     private Vector3 velocity;      
     private bool isRunning;
+    public bool robado = false;
 
     [Header("Robo")]
     public LayerMask capaCuadro;
@@ -83,6 +84,7 @@ public class PlayerController : MonoBehaviour
         if (cerca && Input.GetKeyDown(KeyCode.E)) {
             if (hit[0].TryGetComponent<Cuadro>(out Cuadro cuadro)) {
                 cuadro.SerRobado(puntoMochila);
+                robado = true;
             }
         }    
     }
