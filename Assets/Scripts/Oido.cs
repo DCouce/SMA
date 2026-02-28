@@ -64,7 +64,7 @@ public class Oido : MonoBehaviour
             agent.SetDestination(posicionEstimadaDelRuido);
             if (sensor.VerGuardia())
             {
-                Debug.Log("GUardia");
+                Debug.Log("Guardia");
                 tiempoUltimoSonidoGuardia = Time.time;
             }
             

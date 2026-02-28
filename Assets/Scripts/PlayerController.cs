@@ -1,8 +1,10 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Configuración de Movimiento")]
     public Transform cameraTransform;
     public float walkSpeed = 0.5f; 
     public float runSpeed = 1f;
@@ -21,6 +23,7 @@ public class PlayerController : MonoBehaviour
     public LayerMask capaCuadro;
     public Transform puntoMochila;
     public GameObject textoE;
+    public float radio = 0.5f;
 
     void Start()
     {
@@ -74,19 +77,25 @@ public class PlayerController : MonoBehaviour
         }
 
         UpdateAnimator();
+        IntentarRobo();
+    }
 
-        // Lógica de robo
-        Collider[] hit = Physics.OverlapSphere(transform.position, 0.5f, capaCuadro);
-        bool cerca = hit.Length > 0;
+    private void IntentarRobo()
+    {   // Si ya se tiene el objetivo, se evita perder tiempo para procesar esta percepción
+        if (robado) return;
 
+        Collider[] objetivosDetectados = Physics.OverlapSphere(transform.position, radio, capaCuadro);
+        bool cerca = objetivosDetectados.Length > 0;
+        
         textoE.SetActive(cerca);
-
+        
         if (cerca && Input.GetKeyDown(KeyCode.E)) {
-            if (hit[0].TryGetComponent<Cuadro>(out Cuadro cuadro)) {
+            if (objetivosDetectados[0].TryGetComponent<Cuadro>(out Cuadro cuadro)) {
                 cuadro.SerRobado(puntoMochila);
                 robado = true;
+                textoE.SetActive(false);
             }
-        }    
+        }
     }
 
     private void UpdateAnimator()
