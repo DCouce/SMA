@@ -41,10 +41,10 @@ public class Investigar : MonoBehaviour
 
     public void Investigacion(string sentido)
     {
-        if (puntos_investigacion.Count == 0) 
+        if (puntos_investigacion.Count == 1) 
         {
             if (sentido == "oido") guardia.FinalizarInvestigacionRuido();
-            else if (sentido == "vista") guardia.FinalizarBusquedaVisual();
+            else if (sentido == "vista") Debug.Log("mesi");guardia.FinalizarBusquedaVisual();
             return;
         }
         

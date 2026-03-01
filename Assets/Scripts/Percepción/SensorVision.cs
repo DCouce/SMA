@@ -22,6 +22,7 @@ public class SensorVision : MonoBehaviour
     public bool veGuardia = false;
     public bool veFaltaCuadro = false;
     public Vector3 posicionVeLadron = Vector3.zero; // Arbitrariamente usamos "Cero" si no lo vemos
+    public Vector3 ultimaPosicionConocida = Vector3.zero;
     public float distanciaAlLadron = float.MaxValue; // Infinito si no hay visión
     
     void Start()
@@ -40,6 +41,7 @@ public class SensorVision : MonoBehaviour
             veAlLadron = true;
             posicionVeLadron = objetivo.position; // Datos que luego sirven para MOVERSE
             distanciaAlLadron = Vector3.Distance(transform.position, objetivo.position); // Datos para CAPTURAR
+            ultimaPosicionConocida = objetivo.position;
 
             GirarSuavementeHacia(objetivo.position);
 
@@ -50,7 +52,7 @@ public class SensorVision : MonoBehaviour
         {
             veAlLadronConCuadro = false;
             veAlLadronSinCuadro = false;
-
+            veAlLadron = false;
             posicionVeLadron = Vector3.zero;
             distanciaAlLadron = float.MaxValue; // Valor infinito si no lo ve
         }

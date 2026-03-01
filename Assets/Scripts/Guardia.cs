@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using UnityEngine;
 using UnityEngine.AI;
@@ -16,12 +17,14 @@ public class Guardia : MonoBehaviour
     public float rangoCaptura = 0.2f;
     [Header("Interfaz")]
     public GameObject panelDerrota;
-    public float tiempoMaximoBusqueda = 10f;
+    public float tiempoMaximoBusqueda = 50f;
 
     // --- CAPA DE MODELADO (creencias) ---
     [Header("Capa de Modelado (Memoria)")]
     [SerializeField] public bool sabeRobado = false; // Si se da cuenta que está robado
     [SerializeField] public bool investigandoRuido = false;
+    [SerializeField] public bool visto = false;
+
     [SerializeField] private float tiempoSinVerGuardia = 0f; // 
     [SerializeField] private float tiempoSinVerLadron = 100f; // 
     private Vector3 ultimaPosicionConocidaLadron;
@@ -50,6 +53,7 @@ public class Guardia : MonoBehaviour
 
         if (sensor.veAlLadron)
         {
+            investigar.puntos_investigacion.Clear();
             // Captura
             if (sensor.distanciaAlLadron < rangoCaptura)
             {
@@ -68,11 +72,16 @@ public class Guardia : MonoBehaviour
         // PRIORIDAD 2: CAPA DE PLANIFICACIÓN (utilizan filtro de creencias)
         
         // Cuando lo pierde de vista, investiga por su zona
-        else if (tiempoSinVerLadron < tiempoMaximoBusqueda)
+        else if (tiempoSinVerLadron < tiempoMaximoBusqueda || visto == true)
         {  
+            
             perdida.ReaccionarAPerdidaDeVision();
+            
+            if (!agent.pathPending  && agent.remainingDistance < 0.5f){
             investigar.Investigacion("vista");
+            }
             return;
+            
         }
 
         // Por oido (Nuevo ruido)
@@ -128,7 +137,7 @@ public class Guardia : MonoBehaviour
     }
 
     // REVISAR PARA ELIMINAR
-    public void FinalizarBusquedaVisual() { tiempoSinVerLadron = 100f; }
+    public void FinalizarBusquedaVisual() { tiempoSinVerLadron = 100f;visto = false;}
     public void FinalizarInvestigacionRuido() { investigandoRuido = false; }
 
     // ACTUADORES SIMPLES (Por no añadir, scripts)
