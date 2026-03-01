@@ -4,108 +4,136 @@ using UnityEngine.AI;
 
 public class Guardia : MonoBehaviour
 {
+    // Componentes (Sensores y actuadores)
     private SensorVision sensor;
+    private Oido oido;
     private NavegacionPatrulla navegacion;
     private NavMeshAgent agent;
     private Investigar investigar;
     private PerdidaVision perdida;
-    
     private Animator anim;
 
-    public bool investigandoRuido;
-    public bool robado = false;
-    public bool en_vision = false;
-    public bool en_rango_captura = false;
-    public bool visto_recientemente = false;
-    public int ignorar_ruido = 0;
-
-    public Vector3 puntoDelRuido;
-
-    public float velocidadPatrulla = 0.5f;
-    public float velocidadPersecucion = 0.8f;
-    public float cooldownIgnorarCompaneros = 0f;
-
+    public float rangoCaptura = 0.2f;
+    [Header("Interfaz")]
     public GameObject panelDerrota;
+    public float tiempoMaximoBusqueda = 10f;
+
+    // --- CAPA DE MODELADO (creencias) ---
+    [Header("Capa de Modelado (Memoria)")]
+    [SerializeField] public bool sabeRobado = false; // Si se da cuenta que está robado
+    [SerializeField] public bool investigandoRuido = false;
+    [SerializeField] private float tiempoSinVerGuardia = 0f; // 
+    [SerializeField] private float tiempoSinVerLadron = 100f; // 
+    private Vector3 ultimaPosicionConocidaLadron;
 
     void Start()
     {
         sensor = GetComponent<SensorVision>();
-        navegacion = GetComponent<NavegacionPatrulla>();
+        oido = GetComponent<Oido>();
         agent = GetComponent<NavMeshAgent>();
         investigar = GetComponent<Investigar>();
-        anim = GetComponentInChildren<Animator>();
+        navegacion = GetComponent<NavegacionPatrulla>();
         perdida = GetComponent<PerdidaVision>();
+        anim = GetComponentInChildren<Animator>();
     }
 
+    // CAPA DE CONTROL
     void Update()
     {
-        // 1. Reducir el cooldown con el tiempo
-        if (cooldownIgnorarCompaneros > 0)
+        // Actualizar animador (solo parte visual del juego)
+        if (anim != null) anim.SetFloat("Speed", agent.velocity.magnitude);
+
+        // CAPA DE MODELADO (Actualiza creencias):
+        CapaModelado();
+
+        // PRIORIDAD 1: CAPA REACTIVA (basada en sensores directos)
+
+        if (sensor.veAlLadron)
         {
-            cooldownIgnorarCompaneros -= Time.deltaTime;
-            // NUEVO: Si baja de cero, lo clavamos en 0 exactamente
-            if (cooldownIgnorarCompaneros <= 0) 
+            // Captura
+            if (sensor.distanciaAlLadron < rangoCaptura)
             {
-                cooldownIgnorarCompaneros = 0f;
+                EjecutarCaptura();
+                return;
+            }
+            // Persecución
+            else
+            {
+                navegacion.Perseguir(sensor.objetivo.position);
+                investigandoRuido = false; 
+                return;
             }
         }
 
-        if (anim != null) 
-        {
-            anim.SetFloat("Speed", agent.velocity.magnitude);
+        // PRIORIDAD 2: CAPA DE PLANIFICACIÓN (utilizan filtro de creencias)
+        
+        // Cuando lo pierde de vista, investiga por su zona
+        else if (tiempoSinVerLadron < tiempoMaximoBusqueda)
+        {  
+            perdida.ReaccionarAPerdidaDeVision();
+            investigar.Investigacion("vista");
+            return;
         }
 
-        // CAPA REACTIVA (basada en sensores directos)
-        if (en_rango_captura)
+        // Por oido (Nuevo ruido)
+        else if (tiempoSinVerGuardia > 10f && oido.escuchadoAlgo)
         {
-            // Es necesaria la acción "Capturar()"
-            panelDerrota.SetActive(true);
-
-        }
-        else if (en_vision)
-        {
-            agent.speed = velocidadPersecucion; 
-            navegacion.Perseguir(sensor.objetivo.position);
-            agent.updateRotation = false;
-            investigandoRuido = false; 
-            visto_recientemente = true;
-        }
-        else if (investigandoRuido)
-        {   
-            // NUEVO: Comprobar si vemos a un compañero mientras vamos a investigar el ruido
-            if (sensor.VerGuardia())
-            {
-                investigandoRuido = false;
-                investigar.puntos_investigacion.Clear(); // Limpiamos la ruta de investigación
-                cooldownIgnorarCompaneros = 20f; // Ignora ruidos durante 5 segundos
-                navegacion.Patrullar(); // Vuelve a su ruta normal
-                return; // Salimos del Update para este frame
-            }
-
-            agent.speed = velocidadPatrulla; 
-            agent.updateRotation = true;
-            if (!agent.pathPending && agent.remainingDistance < 0.5f)
-            {
-                investigar.Investigacion("oido");
-            }
+            investigandoRuido = true;
+            investigar.GenerateNewPatrolPath(oido.posicionEstimadaRuido);
+            oido.ConsumirRuido(); 
+            return;
         }
 
-        // CAPA PLANIFICACIÓN
-        else if (visto_recientemente && !en_vision)
+        // C. Continuar investigación de ruido
+        // else if (investigandoRuido)
+        // {
+        //     investigar.Investigacion("oido");
+        //     return;
+        // }
+
+        // PRIORIDAD 3: RUTINA
+        else
         {
-            agent.updateRotation = true;
-            if (!agent.pathPending)
-            {
-                perdida.ReaccionarAPerdidaDeVision();
-                investigar.Investigacion("vista");
-            }
+            navegacion.Patrullar();
+        }
+    }
+
+    // A PARTIR DE AQUÍ VUELVE A ESTAR BIEN
+    // La capa de Modelado actualiza la memoria
+    private void CapaModelado()
+    {
+        // Si el sensor ve que el cuadro no está, el guardia "adquiere el conocimiento" (SaberRobado)
+        if (sensor.veFaltaCuadro || sensor.veAlLadronConCuadro) sabeRobado = true;
+
+        // Si lo vemos, guardamos su posición
+        if (sensor.veAlLadron)
+        {
+            ultimaPosicionConocidaLadron = sensor.objetivo.position;
+            tiempoSinVerLadron = 0f;
+        }
+        else // Actualizamos tiempo
+        {
+            tiempoSinVerLadron += Time.deltaTime;
+        }
+
+        // Actualizar tiempos sin ver guardia
+        if (sensor.veGuardia)
+        {
+            tiempoSinVerGuardia = 0;
         }
         else
         {
-            visto_recientemente = false;
-            agent.speed = velocidadPatrulla; 
-            agent.updateRotation = true;
-            navegacion.Patrullar();
+            tiempoSinVerGuardia += Time.deltaTime;
         }
+    }
+
+    // REVISAR PARA ELIMINAR
+    public void FinalizarBusquedaVisual() { tiempoSinVerLadron = 100f; }
+    public void FinalizarInvestigacionRuido() { investigandoRuido = false; }
+
+    // ACTUADORES SIMPLES (Por no añadir, scripts)
+    private void EjecutarCaptura()
+    {
+        panelDerrota.SetActive(true);
     }
 }

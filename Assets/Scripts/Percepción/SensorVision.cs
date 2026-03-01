@@ -2,64 +2,72 @@ using UnityEngine;
 
 public class SensorVision : MonoBehaviour
 {
-    public Transform objetivo;
-    public Transform[] guardias;
+    [Header("Referencias del Entorno")]
+    public Transform objetivo; // El objeto del ladrón
+    private PlayerController player;
+    public Transform[] guardias; // Otros guardias (para evitar confundir)
+    public Transform posicionBaseCuadro; // El atril
+    public Transform cuadroFisico; // El cuadro a robar
+
+    [Header("Configuración de Visión")]
     public float rangoCaptura = 0.2f;
     public float rangoVision = 5f;
     public float anguloVision = 45f;
     public float velocidadGiroManual = 5f;
-    private Guardia guardia;
-    private PlayerController player;
-
-    // Visión del cuadro
-    public Transform posicionBaseCuadro;
-    public Transform cuadroFisico;
-
-
+    
+    [Header("Percepciones")]
+    public bool veAlLadron = false;
+    public bool veAlLadronSinCuadro = false;
+    public bool veAlLadronConCuadro = false;
+    public bool veGuardia = false;
+    public bool veFaltaCuadro = false;
+    public Vector3 posicionVeLadron = Vector3.zero; // Arbitrariamente usamos "Cero" si no lo vemos
+    public float distanciaAlLadron = float.MaxValue; // Infinito si no hay visión
+    
     void Start()
     {
-        guardia = GetComponent<Guardia>();
-        player = objetivo.GetComponent<PlayerController>();
-
+        // Vinculamos el script del jugador para poder conocer su estado
+        if (objetivo != null)
+            {
+                player = objetivo.GetComponent<PlayerController>();
+            }
     }
     void Update()
     {
-        // Se actualiza la visión según un booleano
-        guardia.en_vision = DetectarYSeguirConLaMirada();
-
-        // Solo estará en rango de captura si lo estamos viendo Y además está cerca
-        guardia.en_rango_captura = guardia.en_vision && EnRangoDeCaptura(rangoCaptura);
-
-        if (!guardia.robado && VerFaltaCuadro()) // Por eficiencia, solo lo revisará si aún no sabe que fue robado
+        // Si ve al jugador
+        if (EstaEnConoDeVision(objetivo))
         {
-            Debug.Log("Falta el Cuadro");
-            guardia.robado = true;
-        }
-    }
+            veAlLadron = true;
+            posicionVeLadron = objetivo.position; // Datos que luego sirven para MOVERSE
+            distanciaAlLadron = Vector3.Distance(transform.position, objetivo.position); // Datos para CAPTURAR
 
-    public bool VerFaltaCuadro()
-    {
-        return (Vector3.Distance(cuadroFisico.position, posicionBaseCuadro.position) > 0.1f) && EstaEnConoDeVision(posicionBaseCuadro, true);
-    }
-
-    public bool DetectarYSeguirConLaMirada()
-    {
-        if (objetivo == null) return false;
-
-        // 1. Intentamos ver si está en el cono actual
-        bool enCono = EstaEnConoDeVision(objetivo);
-
-        // 2. Si lo vemos (o si estaba justo en el borde), giramos hacia él
-        // Esto hace que el "cono" se mueva, permitiendo que la persecución continúe
-        if (enCono)
-        {
             GirarSuavementeHacia(objetivo.position);
-            guardia.robado = player.robado;
-        }
 
-        return enCono;
+            veAlLadronConCuadro = player.robado;
+            veAlLadronSinCuadro = !player.robado;
+        }
+        else
+        {
+            veAlLadronConCuadro = false;
+            veAlLadronSinCuadro = false;
+
+            posicionVeLadron = Vector3.zero;
+            distanciaAlLadron = float.MaxValue; // Valor infinito si no lo ve
+        }
+        // Ve a algún otro guardia
+        veGuardia = VeGuardia();
+
+        // Si está viendo el "atril" vacío
+        veFaltaCuadro = VeFaltaCuadro();
     }
-    public bool VerGuardia()
+
+    private bool VeFaltaCuadro()
+    {
+        float distanciaAlAtril = Vector3.Distance(cuadroFisico.position, posicionBaseCuadro.position);
+        return (distanciaAlAtril > 0.1f) && EstaEnConoDeVision(posicionBaseCuadro, true);
+    }
+
+    public bool VeGuardia()
     {
         foreach (Transform obj in guardias)
         {
@@ -109,14 +117,10 @@ public class SensorVision : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, rotacionObjetivo, Time.deltaTime * velocidadGiroManual);
     }
 
-    public bool EnRangoDeCaptura(float rangoCaptura)
-    {
-        return Vector3.Distance(transform.position, objetivo.position) <= rangoCaptura;
-    }
 
     // REVISAR, SOLO PARA DEBUGGING: Dibuja el cono de visión en la escena
     private void OnDrawGizmos()
-{
+    {
     // 1. Dibujar el rango de distancia (Círculo amarillo)
     Gizmos.color = Color.yellow;
     // Dibujamos una esfera de cables para ver el área total de alcance
@@ -142,5 +146,5 @@ public class SensorVision : MonoBehaviour
             Gizmos.DrawLine(transform.position, objetivo.position);
         }
     }
-}
+    }
 }

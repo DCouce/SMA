@@ -13,7 +13,7 @@ public class Audio : MonoBehaviour
 
     [Header("Configuración de Ruido")]
     public float baseDetectionRange = 5f;
-    public LayerMask capaQueEscucha; // Capas de guardias y elementos del mapa
+    public LayerMask capaQueEscucha; // Capas de guardias
     public float noiseLevel = 0f;
 
     // Referencias automáticas
@@ -97,10 +97,6 @@ public class Audio : MonoBehaviour
             {
                 oido.OnHeardSound(transform.position);
             }
-
-            // Si es un elemento del mapa (como el Torii o sensores), activa su lógica
-            // Buscamos cualquier script que tenga el método "AlRecibirRuido"
-            obj.SendMessage("AlRecibirRuido", transform.position, SendMessageOptions.DontRequireReceiver);
         }
     }
 }
