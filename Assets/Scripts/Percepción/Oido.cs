@@ -21,7 +21,7 @@ public class Oido : MonoBehaviour
         // Por defecto usamos el radio normal
         float radioAAplicar = radioDeIncertidumbre;
 
-        // LÓGICA DE PRECISIÓN: Si ya escuchamos algo antes...
+        // Lógica de precisión : Si ya escuchamos algo antes
         if (ultimaPosicionReal != Vector3.zero)
         {
             // Si el ruido actual está a menos de 1m del anterior Y fue hace menos de 2 segundos

@@ -25,10 +25,10 @@ public class NavegacionPatrulla : MonoBehaviour
     {
         if (destinos_sin_robar.Length > 0 || destinos_robado.Length > 0)
         {
-            // 1. Buscamos cuál es el índice del punto más cercano
+            // Buscamos cuál es el índice del punto más cercano
             indiceActual = ObtenerIndiceMasCercano();
             
-            // 2. Le decimos al agente que vaya a ese punto primero
+            // Le decimos al agente que vaya a ese punto primero
             if (guardia.sabeRobado == false){
                 agent.destination = destinos_sin_robar[indiceActual].position;
             }

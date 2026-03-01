@@ -14,7 +14,6 @@ public class CamaraTerceraPersona : MonoBehaviour
     private Vector2 scrollDelta;
     private float targetZoom;
     private float currentZoom;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         controls = new PlayerControls();
