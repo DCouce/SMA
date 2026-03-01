@@ -18,10 +18,17 @@ public class Guardia : MonoBehaviour
     private Animator anim;
 
     public float rangoCaptura = 0.2f;
+
     [Header("Interfaz")]
     public float tiempoMaximoBusqueda = 5f;
 
-    // --- CAPA DE MODELADO (creencias) ---
+    // Destinos de verificación
+    [Header("Comportamiento Post-Persecución")]
+    public Transform posicionCuadro; 
+    public Transform posicionSalida; 
+    [SerializeField] private bool yendoAVerificar = false; // Bandera para saber si está en este estado
+
+    // CAPA DE MODELADO (creencias)
     [Header("Capa de Modelado (Memoria)")]
     [SerializeField] public bool sabeRobado = false; // Si se da cuenta que está robado
     [SerializeField] public bool investigandoRuido = false;
@@ -57,6 +64,7 @@ public class Guardia : MonoBehaviour
         {
             investigar.puntos_investigacion.Clear();
             investigandoRuido = false;
+            yendoAVerificar = false; 
 
             // Captura
             if (sensor.distanciaAlLadron < rangoCaptura)
@@ -81,6 +89,24 @@ public class Guardia : MonoBehaviour
             investigandoRuido = false; 
             investigar.puntos_investigacion.Clear();
             revisar.EjecutarRevisar(ultimaPosicionConocidaLadron);
+
+            yendoAVerificar = true;
+            return;
+        }
+
+        // Cuando lo pierde vista y revisa, se dirige al lugar del cuadro o a la salida a investigar
+        else if (yendoAVerificar){
+            Transform destinoVerificacion = sabeRobado ? posicionSalida : posicionCuadro;
+
+            agent.destination = destinoVerificacion.position;
+            agent.speed = 0.8f;
+
+            if (!agent.pathPending && agent.remainingDistance < 0.5f)
+            {
+                yendoAVerificar = false;
+                investigandoRuido = true;
+                investigar.GenerateNewPatrolPath(destinoVerificacion.position);
+            }
             return;
         }
 
