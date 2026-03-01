@@ -5,26 +5,26 @@ using UnityEngine.AI;
 
 public class Guardia : MonoBehaviour
 {
-    // Componentes (Sensores y actuadores)
+    // Componentes (Sensores y comportamientos)
     private SensorVision sensor;
     private Oido oido;
-    private NavegacionPatrulla navegacion;
     private NavMeshAgent agent;
+    
+    private Capturar capturar;
+    private Perseguir perseguir;
+    private Revisar revisar;
     private Investigar investigar;
-    private PerdidaVision perdida;
+    private NavegacionPatrulla navegacion;
     private Animator anim;
 
     public float rangoCaptura = 0.2f;
     [Header("Interfaz")]
-    public GameObject panelDerrota;
-    public float tiempoMaximoBusqueda = 50f;
+    public float tiempoMaximoBusqueda = 5f;
 
     // --- CAPA DE MODELADO (creencias) ---
     [Header("Capa de Modelado (Memoria)")]
     [SerializeField] public bool sabeRobado = false; // Si se da cuenta que está robado
     [SerializeField] public bool investigandoRuido = false;
-    [SerializeField] public bool visto = false;
-
     [SerializeField] private float tiempoSinVerGuardia = 0f; // 
     [SerializeField] private float tiempoSinVerLadron = 100f; // 
     private Vector3 ultimaPosicionConocidaLadron;
@@ -34,9 +34,11 @@ public class Guardia : MonoBehaviour
         sensor = GetComponent<SensorVision>();
         oido = GetComponent<Oido>();
         agent = GetComponent<NavMeshAgent>();
+        capturar = GetComponent<Capturar>();
+        perseguir = GetComponent<Perseguir>();
+        revisar = GetComponent<Revisar>();
         investigar = GetComponent<Investigar>();
         navegacion = GetComponent<NavegacionPatrulla>();
-        perdida = GetComponent<PerdidaVision>();
         anim = GetComponentInChildren<Animator>();
     }
 
@@ -54,34 +56,31 @@ public class Guardia : MonoBehaviour
         if (sensor.veAlLadron)
         {
             investigar.puntos_investigacion.Clear();
+            investigandoRuido = false;
+
             // Captura
             if (sensor.distanciaAlLadron < rangoCaptura)
             {
-                EjecutarCaptura();
+                capturar.EjecutarCaptura();
                 return;
             }
             // Persecución
             else
             {
-                navegacion.Perseguir(sensor.objetivo.position);
-                investigandoRuido = false; 
+                perseguir.EjecutarPersecucion(sensor.objetivo.position);
                 return;
             }
         }
 
-        // PRIORIDAD 2: CAPA DE PLANIFICACIÓN (utilizan filtro de creencias)
+        // PRIORIDAD 2: CAPA DE PLANIFICACIÓN (utilizan base de creencias)
         
-        // Cuando lo pierde de vista, investiga por su zona
-        else if (tiempoSinVerLadron < tiempoMaximoBusqueda || visto == true)
+        // Cuando lo pierde de vista, revisa ese punto
+        else if (tiempoSinVerLadron < tiempoMaximoBusqueda)
         {  
-            
-            perdida.ReaccionarAPerdidaDeVision();
-            
-            if (!agent.pathPending  && agent.remainingDistance < 0.5f){
-            investigar.Investigacion("vista");
-            }
+            investigandoRuido = false; 
+            investigar.puntos_investigacion.Clear();
+            revisar.EjecutarRevisar(ultimaPosicionConocidaLadron);
             return;
-            
         }
 
         // Por oido (Nuevo ruido)
@@ -93,12 +92,11 @@ public class Guardia : MonoBehaviour
             return;
         }
 
-        // C. Continuar investigación de ruido
-        // else if (investigandoRuido)
-        // {
-        //     investigar.Investigacion("oido");
-        //     return;
-        // }
+        else if (investigandoRuido)
+        {
+            investigar.Investigacion();
+            return;
+        }
 
         // PRIORIDAD 3: RUTINA
         else
@@ -107,7 +105,6 @@ public class Guardia : MonoBehaviour
         }
     }
 
-    // A PARTIR DE AQUÍ VUELVE A ESTAR BIEN
     // La capa de Modelado actualiza la memoria
     private void CapaModelado()
     {
@@ -136,13 +133,6 @@ public class Guardia : MonoBehaviour
         }
     }
 
-    // REVISAR PARA ELIMINAR
-    public void FinalizarBusquedaVisual() { tiempoSinVerLadron = 100f;visto = false;}
     public void FinalizarInvestigacionRuido() { investigandoRuido = false; }
 
-    // ACTUADORES SIMPLES (Por no añadir, scripts)
-    private void EjecutarCaptura()
-    {
-        panelDerrota.SetActive(true);
-    }
 }

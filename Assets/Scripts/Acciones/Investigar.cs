@@ -39,19 +39,23 @@ public class Investigar : MonoBehaviour
         return center; 
     }
 
-    public void Investigacion(string sentido)
+    public void Investigacion()
     {
-        if (puntos_investigacion.Count == 1) 
-        {
-            if (sentido == "oido") guardia.FinalizarInvestigacionRuido();
-            else if (sentido == "vista") Debug.Log("mesi");guardia.FinalizarBusquedaVisual();
-            return;
-        }
-        
+        if (puntos_investigacion.Count == 0) return;
+
         if (!agent.pathPending && agent.remainingDistance < 0.7f) 
         {
             puntos_investigacion.RemoveAt(0);
-            if (puntos_investigacion.Count > 0) agent.SetDestination(puntos_investigacion[0]);
+            
+            if (puntos_investigacion.Count > 0) 
+            {
+                agent.SetDestination(puntos_investigacion[0]);
+            }
+            else 
+            {
+                // Si ya no quedan puntos, avisamos al cerebro
+                guardia.FinalizarInvestigacionRuido();
+            }
         }
     }
 

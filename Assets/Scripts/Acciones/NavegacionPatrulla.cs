@@ -4,12 +4,12 @@ using UnityEngine.AI;
 
 public class NavegacionPatrulla : MonoBehaviour
 {
-    public Transform[] destinos_sin_robar;
-    public Transform[] destinos_robado;
+    public Transform[] destinos_sin_robar; // Para cuando no sabe que ha sido robado
+    public Transform[] destinos_robado; // Para cuando sabe que sí ya ha sido robado
     
     [Header("Configuración de Movimiento")]
     public float velocidadPatrulla = 0.5f;
-    public float velocidadPersecucion = 0.8f;
+    public float velocidadAlerta = 0.75f; // Si sabe que lo han robado
 
     private int indiceActual = 0; // Empezamos en 0 por defecto
     private NavMeshAgent agent;
@@ -44,13 +44,14 @@ public class NavegacionPatrulla : MonoBehaviour
 
     private int ObtenerIndiceMasCercano()
     {
+        Transform[] destinosActuales = guardia.sabeRobado ? destinos_robado : destinos_sin_robar;
+
         int mejorIndice = 0;
         float distanciaMinima = Mathf.Infinity;
-        if (guardia.sabeRobado == false){
 
-        for (int i = 0; i < destinos_sin_robar.Length; i++)
+        for (int i = 0; i < destinosActuales.Length; i++)
         {
-            float distancia = Vector3.Distance(transform.position, destinos_sin_robar[i].position);
+            float distancia = Vector3.Distance(transform.position, destinosActuales[i].position);
             if (distancia < distanciaMinima)
             {
                 distanciaMinima = distancia;
@@ -58,65 +59,23 @@ public class NavegacionPatrulla : MonoBehaviour
             }
         }
         return mejorIndice;
-        }
-        else
-        {
-           for (int i = 0; i < destinos_robado.Length; i++)
-        {
-            float distancia = Vector3.Distance(transform.position, destinos_robado[i].position);
-            if (distancia < distanciaMinima)
-            {
-                distanciaMinima = distancia;
-                mejorIndice = i;
-            }
-        }
-        return mejorIndice; 
-        }
     }
 
     public void Patrullar()
     {
-        if (guardia.sabeRobado == false){
-        if (destinos_sin_robar.Length == 0) return;
+        Transform[] destinosActuales = guardia.sabeRobado ? destinos_robado : destinos_sin_robar;
+
+        if (destinosActuales.Length == 0) return;
 
         agent.updateRotation = true;
-        agent.speed = velocidadPatrulla;
+        agent.speed = guardia.sabeRobado ? velocidadAlerta : velocidadPatrulla;
 
         // Si el agente está cerca del destino actual y no está calculando ruta...
         if (!agent.pathPending && agent.remainingDistance < 0.7f)
         {
-            // AVANCE LÓGICO: Simplemente incrementamos el índice. 
-            // Si el más cercano fue el 3, el siguiente será el 4, luego el 5... 
-            // y al llegar al final del array volverá al 0 gracias al operador % (módulo).
-            indiceActual = (indiceActual + 1) % destinos_sin_robar.Length;
+            indiceActual = (indiceActual + 1) % destinosActuales.Length;
             
-            agent.destination = destinos_sin_robar[indiceActual].position;
+            agent.destination = destinosActuales[indiceActual].position;
         }
-        }
-        else
-        {
-        if (destinos_robado.Length == 0) return;
-
-        agent.updateRotation = true;
-        agent.speed = velocidadPatrulla;
-
-        // Si el agente está cerca del destino actual y no está calculando ruta...
-        if (!agent.pathPending && agent.remainingDistance < 0.7f)
-        {
-            // AVANCE LÓGICO: Simplemente incrementamos el índice. 
-            // Si el más cercano fue el 3, el siguiente será el 4, luego el 5... 
-            // y al llegar al final del array volverá al 0 gracias al operador % (módulo).
-            indiceActual = (indiceActual + 1) % destinos_robado.Length;
-            
-            agent.destination = destinos_robado[indiceActual].position;
-        } 
-        }
-
-    }
-
-    public void Perseguir(Vector3 posicion)
-    {
-        agent.speed = velocidadPersecucion;
-        agent.destination = posicion;
     }
 }
