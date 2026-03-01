@@ -5,7 +5,7 @@ public class SensorVision : MonoBehaviour
     public Transform objetivo;
     public Transform[] guardias;
     public float rangoCaptura = 0.2f;
-    public float rangoVision = 15f;
+    public float rangoVision = 5f;
     public float anguloVision = 45f;
     public float velocidadGiroManual = 5f;
     private Guardia guardia;
