@@ -67,7 +67,7 @@ public class Guardia : MonoBehaviour
             // Persecución
             else
             {
-                perseguir.EjecutarPersecucion(sensor.objetivo.position);
+                perseguir.EjecutarPersecucion(sensor.posicionVeLadron);
                 return;
             }
         }
@@ -76,7 +76,8 @@ public class Guardia : MonoBehaviour
         
         // Cuando lo pierde de vista, revisa ese punto
         else if (tiempoSinVerLadron < tiempoMaximoBusqueda)
-        {  
+        {
+
             investigandoRuido = false; 
             investigar.puntos_investigacion.Clear();
             revisar.EjecutarRevisar(ultimaPosicionConocidaLadron);
@@ -86,6 +87,7 @@ public class Guardia : MonoBehaviour
         // Por oido (Nuevo ruido)
         else if (tiempoSinVerGuardia > 10f && oido.escuchadoAlgo)
         {
+
             investigandoRuido = true;
             investigar.GenerateNewPatrolPath(oido.posicionEstimadaRuido);
             oido.ConsumirRuido(); 
@@ -94,6 +96,7 @@ public class Guardia : MonoBehaviour
 
         else if (investigandoRuido)
         {
+
             investigar.Investigacion();
             return;
         }

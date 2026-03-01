@@ -73,9 +73,11 @@ public class NavegacionPatrulla : MonoBehaviour
         // Si el agente está cerca del destino actual y no está calculando ruta...
         if (!agent.pathPending && agent.remainingDistance < 0.7f)
         {
+
             indiceActual = (indiceActual + 1) % destinosActuales.Length;
             
             agent.destination = destinosActuales[indiceActual].position;
         }
+
     }
 }
