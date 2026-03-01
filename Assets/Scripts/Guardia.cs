@@ -25,7 +25,7 @@ public class Guardia : MonoBehaviour
     [Header("Capa de Modelado (Memoria)")]
     [SerializeField] public bool sabeRobado = false; // Si se da cuenta que está robado
     [SerializeField] public bool investigandoRuido = false;
-    [SerializeField] private float tiempoSinVerGuardia = 0f; // 
+    [SerializeField] private float tiempoSinVerGuardia = 100f; // 
     [SerializeField] private float tiempoSinVerLadron = 100f; // 
     private Vector3 ultimaPosicionConocidaLadron;
 
@@ -117,7 +117,7 @@ public class Guardia : MonoBehaviour
         // Si lo vemos, guardamos su posición
         if (sensor.veAlLadron)
         {
-            ultimaPosicionConocidaLadron = sensor.objetivo.position;
+            ultimaPosicionConocidaLadron = sensor.posicionVeLadron;
             tiempoSinVerLadron = 0f;
         }
         else // Actualizamos tiempo
