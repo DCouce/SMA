@@ -9,12 +9,12 @@ public class Investigar : MonoBehaviour
     public List<Vector3> puntos_investigacion = new List<Vector3>();
 
     private NavMeshAgent agent;
-    private Guardia guardia;
+    private Modelado modelo;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        guardia = GetComponent<Guardia>();
+        modelo = GetComponent<Modelado>();
     }
 
     public void GenerateNewPatrolPath(Vector3 posicion)
@@ -53,8 +53,8 @@ public class Investigar : MonoBehaviour
             }
             else 
             {
-                // Si ya no quedan puntos, avisamos al cerebro
-                guardia.FinalizarInvestigacionRuido();
+                // Si ya no quedan puntos, avisamos al modelo que ya no investigue
+                if (modelo != null) modelo.investigandoRuido = false;
             }
         }
     }

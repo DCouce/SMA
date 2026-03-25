@@ -13,12 +13,12 @@ public class NavegacionPatrulla : MonoBehaviour
 
     private int indiceActual = 0; // Empezamos en 0 por defecto
     private NavMeshAgent agent;
-    private Guardia guardia;
+    private Modelado modelo;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        guardia = GetComponent<Guardia>();
+        modelo = GetComponent<Modelado>();
     }
 
     void Start()
@@ -29,7 +29,7 @@ public class NavegacionPatrulla : MonoBehaviour
             indiceActual = ObtenerIndiceMasCercano();
             
             // Le decimos al agente que vaya a ese punto primero
-            if (guardia.sabeRobado == false){
+            if (modelo.sabeRobado == false){
                 agent.destination = destinos_sin_robar[indiceActual].position;
             }
             else
@@ -44,7 +44,7 @@ public class NavegacionPatrulla : MonoBehaviour
 
     private int ObtenerIndiceMasCercano()
     {
-        Transform[] destinosActuales = guardia.sabeRobado ? destinos_robado : destinos_sin_robar;
+        Transform[] destinosActuales = modelo.sabeRobado ? destinos_robado : destinos_sin_robar;
 
         int mejorIndice = 0;
         float distanciaMinima = Mathf.Infinity;
@@ -63,14 +63,14 @@ public class NavegacionPatrulla : MonoBehaviour
 
     public void Patrullar()
     {
-        Transform[] destinosActuales = guardia.sabeRobado ? destinos_robado : destinos_sin_robar;
+        Transform[] destinosActuales = modelo.sabeRobado ? destinos_robado : destinos_sin_robar;
 
         if (destinosActuales.Length == 0) return;
 
         agent.updateRotation = true;
-        agent.speed = guardia.sabeRobado ? velocidadAlerta : velocidadPatrulla;
+        agent.speed = modelo.sabeRobado ? velocidadAlerta : velocidadPatrulla;
 
-        // Si el agente está cerca del destino actual y no está calculando ruta...
+        // Si el agente está cerca del destino actual y no está calculando ruta
         if (!agent.pathPending && agent.remainingDistance < 0.7f)
         {
 

@@ -26331,6 +26331,8 @@ GameObject:
   m_Component:
   - component: {fileID: 388811627}
   - component: {fileID: 388811626}
+  - component: {fileID: 388811636}
+  - component: {fileID: 388811635}
   - component: {fileID: 388811625}
   - component: {fileID: 388811628}
   - component: {fileID: 388811632}
@@ -26507,13 +26509,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Guardia
   rangoCaptura: 0.2
   tiempoMaximoBusqueda: 10
-  posicionCuadro: {fileID: 1784690036}
-  posicionSalida: {fileID: 603734607}
-  yendoAVerificar: 0
-  sabeRobado: 0
-  investigandoRuido: 0
-  tiempoSinVerGuardia: 100
-  tiempoSinVerLadron: 100
 --- !u!4 &388811627
 Transform:
   m_ObjectHideFlags: 0
@@ -26702,7 +26697,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14be3bf40eaab0d4d89ed3d9c1b9ef31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Perseguir
-  velocidadPersecucion: 1
+  velocidadPersecucion: 0.9
+--- !u!114 &388811635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388811619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a992e5712e49a24cb1aa7ccf6faa457, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planificacion
+--- !u!114 &388811636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388811619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf39fc3ed9a20943936a5176872d808, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Modelado
+  sabeRobado: 0
+  investigandoRuido: 0
+  ultimaPosicionConocidaLadron: {x: 0, y: 0, z: 0}
+  tiempoUltimoAvistamientoLadron: -100
+  tiempoUltimoAvistamientoGuardia: -100
+  posicionCuadro: {fileID: 1784690036}
+  posicionSalida: {fileID: 603734607}
 --- !u!1001 &389225845
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -101011,6 +101037,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1512524465}
   - component: {fileID: 1512524464}
+  - component: {fileID: 1512524474}
+  - component: {fileID: 1512524473}
   - component: {fileID: 1512524463}
   - component: {fileID: 1512524466}
   - component: {fileID: 1512524471}
@@ -101187,13 +101215,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Guardia
   rangoCaptura: 0.2
   tiempoMaximoBusqueda: 10
-  posicionCuadro: {fileID: 1784690036}
-  posicionSalida: {fileID: 603734607}
-  yendoAVerificar: 0
-  sabeRobado: 0
-  investigandoRuido: 0
-  tiempoSinVerGuardia: 100
-  tiempoSinVerLadron: 100
 --- !u!4 &1512524465
 Transform:
   m_ObjectHideFlags: 0
@@ -101357,7 +101378,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14be3bf40eaab0d4d89ed3d9c1b9ef31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Perseguir
-  velocidadPersecucion: 1
+  velocidadPersecucion: 0.9
 --- !u!114 &1512524471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101383,6 +101404,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2343d69bb41e0e344aad456d32b532b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Revisar
+--- !u!114 &1512524473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512524457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a992e5712e49a24cb1aa7ccf6faa457, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planificacion
+--- !u!114 &1512524474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512524457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf39fc3ed9a20943936a5176872d808, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Modelado
+  sabeRobado: 0
+  investigandoRuido: 0
+  ultimaPosicionConocidaLadron: {x: 0, y: 0, z: 0}
+  tiempoUltimoAvistamientoLadron: -100
+  tiempoUltimoAvistamientoGuardia: -100
+  posicionCuadro: {fileID: 1784690036}
+  posicionSalida: {fileID: 603734607}
 --- !u!1001 &1517087518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -105633,6 +105685,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1586003700}
   - component: {fileID: 1586003699}
+  - component: {fileID: 1586003709}
+  - component: {fileID: 1586003708}
   - component: {fileID: 1586003698}
   - component: {fileID: 1586003701}
   - component: {fileID: 1586003706}
@@ -105809,13 +105863,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Guardia
   rangoCaptura: 0.2
   tiempoMaximoBusqueda: 10
-  posicionCuadro: {fileID: 1784690036}
-  posicionSalida: {fileID: 603734607}
-  yendoAVerificar: 0
-  sabeRobado: 0
-  investigandoRuido: 0
-  tiempoSinVerGuardia: 100
-  tiempoSinVerLadron: 100
 --- !u!4 &1586003700
 Transform:
   m_ObjectHideFlags: 0
@@ -105979,7 +106026,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14be3bf40eaab0d4d89ed3d9c1b9ef31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Perseguir
-  velocidadPersecucion: 1
+  velocidadPersecucion: 0.9
 --- !u!114 &1586003706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -106005,6 +106052,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2343d69bb41e0e344aad456d32b532b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Revisar
+--- !u!114 &1586003708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1586003692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a992e5712e49a24cb1aa7ccf6faa457, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planificacion
+--- !u!114 &1586003709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1586003692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf39fc3ed9a20943936a5176872d808, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Modelado
+  sabeRobado: 0
+  investigandoRuido: 0
+  ultimaPosicionConocidaLadron: {x: 0, y: 0, z: 0}
+  tiempoUltimoAvistamientoLadron: -100
+  tiempoUltimoAvistamientoGuardia: -100
+  posicionCuadro: {fileID: 1784690036}
+  posicionSalida: {fileID: 603734607}
 --- !u!1001 &1587691277
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -123117,6 +123195,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1850501529}
   - component: {fileID: 1850501528}
+  - component: {fileID: 1850501538}
+  - component: {fileID: 1850501537}
   - component: {fileID: 1850501527}
   - component: {fileID: 1850501530}
   - component: {fileID: 1850501535}
@@ -123293,13 +123373,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Guardia
   rangoCaptura: 0.2
   tiempoMaximoBusqueda: 10
-  posicionCuadro: {fileID: 1784690036}
-  posicionSalida: {fileID: 603734607}
-  yendoAVerificar: 0
-  sabeRobado: 0
-  investigandoRuido: 0
-  tiempoSinVerGuardia: 100
-  tiempoSinVerLadron: 100
 --- !u!4 &1850501529
 Transform:
   m_ObjectHideFlags: 0
@@ -123463,7 +123536,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14be3bf40eaab0d4d89ed3d9c1b9ef31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Perseguir
-  velocidadPersecucion: 1
+  velocidadPersecucion: 0.9
 --- !u!114 &1850501535
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123489,6 +123562,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2343d69bb41e0e344aad456d32b532b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Revisar
+--- !u!114 &1850501537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850501521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a992e5712e49a24cb1aa7ccf6faa457, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Planificacion
+--- !u!114 &1850501538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850501521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf39fc3ed9a20943936a5176872d808, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Modelado
+  sabeRobado: 0
+  investigandoRuido: 0
+  ultimaPosicionConocidaLadron: {x: 0, y: 0, z: 0}
+  tiempoUltimoAvistamientoLadron: -100
+  tiempoUltimoAvistamientoGuardia: -100
+  posicionCuadro: {fileID: 1784690036}
+  posicionSalida: {fileID: 603734607}
 --- !u!1001 &1851899995
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -141328,6 +141432,7 @@ SceneRoots:
   - {fileID: 1259405431}
   - {fileID: 459832492}
   - {fileID: 1784690036}
+  - {fileID: 603734607}
   - {fileID: 1226564969}
   - {fileID: 1260023160}
   - {fileID: 1512524465}
@@ -141347,5 +141452,4 @@ SceneRoots:
   - {fileID: 1441077804}
   - {fileID: 783433838}
   - {fileID: 859514276}
-  - {fileID: 603734607}
   - {fileID: 1431788555}
