@@ -1,17 +1,21 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Capturar : MonoBehaviour
 {
-    [Header("Configuración de Interfaz")]
     public GameObject panelDerrota;
+    private NavMeshAgent agent;
 
-    public void EjecutarCaptura()
+    void Awake() => agent = GetComponent<NavMeshAgent>();
+
+    void OnEnable()
     {
-        // Panel de derrota
-        if (panelDerrota != null)
-        {
-            panelDerrota.SetActive(true);
-        }
+        // Detener al guardia físicamente
+        if (agent != null) agent.isStopped = true;
 
+        if (panelDerrota != null) panelDerrota.SetActive(true);
+        
+        Debug.Log("¡Capturado!");
+        // Aquí podrías congelar el tiempo: Time.timeScale = 0;
     }
 }

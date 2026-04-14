@@ -3,19 +3,28 @@ using UnityEngine.AI;
 
 public class Perseguir : MonoBehaviour
 {
-    
     private NavMeshAgent agent;
     public float velocidadPersecucion = 0.8f;
+    private Vector3 ultimaPosicionDeteccion;
 
-    void Awake()
+    void Awake() => agent = GetComponent<NavMeshAgent>();
+
+    // La Capa Reactiva llama a esto constantemente
+    public void ActualizarObjetivo(Vector3 posicion)
     {
-        agent = GetComponent<NavMeshAgent>();
+        ultimaPosicionDeteccion = posicion;
+        if (this.enabled && agent.isOnNavMesh) agent.SetDestination(posicion);
     }
 
-    public void EjecutarPersecucion(Vector3 posicion)
+    void OnEnable()
     {
         agent.speed = velocidadPersecucion;
-        agent.destination = posicion;
+        agent.isStopped = false;
+        agent.SetDestination(ultimaPosicionDeteccion);
     }
 
+    void OnDisable()
+    {
+        if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
+    }
 }

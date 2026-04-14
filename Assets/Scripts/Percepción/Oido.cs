@@ -1,14 +1,12 @@
 using UnityEngine;
+using System;
 
 public class Oido : MonoBehaviour
 {
     [Header("Configuración Auditiva")]
     public float radioDeIncertidumbre = 2.5f;
 
-    [Header("Percepciones (Buzón para el Cerebro)")]
-    public bool escuchadoAlgo = false;
-    public Vector3 posicionEstimadaRuido;
-    public float instanteDelSonido;
+    public event Action<Vector3> OnRuidoEscuchado;
 
     // Variables internas para la lógica de precisión
     private Vector3 ultimaPosicionReal;
@@ -16,8 +14,6 @@ public class Oido : MonoBehaviour
 
     public void OnHeardSound(Vector3 posicionRealDelRuido)
     {   
-        instanteDelSonido = Time.time;
-
         // Por defecto usamos el radio normal
         float radioAAplicar = radioDeIncertidumbre;
 
@@ -32,19 +28,16 @@ public class Oido : MonoBehaviour
         }
 
         // Calculamos la posición con error (no debe ser exacto)
-        Vector3 calculoConError = posicionRealDelRuido + (Random.insideUnitSphere * radioAAplicar);        
+        Vector3 calculoConError = posicionRealDelRuido + (UnityEngine.Random.insideUnitSphere * radioAAplicar);        
         calculoConError.y = posicionRealDelRuido.y; 
 
-        posicionEstimadaRuido = calculoConError;
-        escuchadoAlgo = true;
+        ultimaPosicionReal = posicionRealDelRuido;
+        tiempoUltimoSonido = Time.time;
 
         // Guardamos los datos para la siguiente comparación
         ultimaPosicionReal = posicionRealDelRuido;
-        tiempoUltimoSonido = Time.time;    
-    }
+        tiempoUltimoSonido = Time.time;  
 
-    public void ConsumirRuido()
-    {
-        escuchadoAlgo = false;
+        OnRuidoEscuchado?.Invoke(calculoConError);  
     }
 }

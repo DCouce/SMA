@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class SensorVision : MonoBehaviour
 {
@@ -10,20 +11,19 @@ public class SensorVision : MonoBehaviour
     public Transform cuadroFisico; // El cuadro a robar
 
     [Header("Configuración de Visión")]
-    public float rangoCaptura = 0.2f;
     public float rangoVision = 5f;
     public float anguloVision = 45f;
     public float velocidadGiroManual = 5f;
     
-    [Header("Percepciones")]
-    public bool veAlLadron = false;
-    public bool veAlLadronSinCuadro = false;
-    public bool veAlLadronConCuadro = false;
-    public bool veGuardia = false;
-    public bool veFaltaCuadro = false;
-    public Vector3 posicionVeLadron = Vector3.zero; // Arbitrariamente usamos "Cero" si no lo vemos
-    public float distanciaAlLadron = float.MaxValue; // Infinito si no hay visión
+    private Modelado modelo;
+    private bool veiaAlLadronAntes = false;
     
+    // EVENTOS
+    public event Action<Vector3, bool> OnLadronVisto;
+    public event Action OnLadronPerdido;
+    public event Action OnCuadroRobadoDetectado;
+    public event Action OnCompañeroVisto;
+
     void Start()
     {
         // Vinculamos el script del jugador para poder conocer su estado
@@ -34,31 +34,33 @@ public class SensorVision : MonoBehaviour
     }
     void Update()
     {
-        // Si ve al jugador
-        if (EstaEnConoDeVision(objetivo))
-        {
-            veAlLadron = true;
-            posicionVeLadron = objetivo.position; // Datos que luego sirven para MOVERSE
-            distanciaAlLadron = Vector3.Distance(transform.position, objetivo.position); // Datos para CAPTURAR
+        // GESTIÓN DEL LADRÓN
+        bool veAlLadronAhora = EstaEnConoDeVision(objetivo);
 
+        if (veAlLadronAhora)
+        {
+            OnLadronVisto?.Invoke(objetivo.position, player.robado);
+            veiaAlLadronAntes = true;
             GirarSuavementeHacia(objetivo.position);
-
-            veAlLadronConCuadro = player.robado;
-            veAlLadronSinCuadro = !player.robado;
         }
-        else
+
+        else if (veiaAlLadronAntes && !veAlLadronAhora)
         {
-            veAlLadronConCuadro = false;
-            veAlLadronSinCuadro = false;
-            veAlLadron = false;
-            posicionVeLadron = Vector3.zero;
-            distanciaAlLadron = float.MaxValue; // Valor infinito si no lo ve
+            OnLadronPerdido?.Invoke();
+            veiaAlLadronAntes = false;
         }
-        // Ve a algún otro guardia
-        veGuardia = VeGuardia();
 
-        // Si está viendo el "atril" vacío
-        veFaltaCuadro = VeFaltaCuadro();
+        // GESTIÓN DEL CUADRO
+        if (VeFaltaCuadro())
+        {
+            OnCuadroRobadoDetectado?.Invoke();
+        }
+
+        // GESTIÓN DE COMPAÑEROS
+        if (VeGuardia())
+        {
+        OnCompañeroVisto?.Invoke();
+        }
     }
 
     private bool VeFaltaCuadro()

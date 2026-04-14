@@ -26342,7 +26342,6 @@ GameObject:
   - component: {fileID: 388811633}
   - component: {fileID: 388811623}
   - component: {fileID: 388811622}
-  - component: {fileID: 388811638}
   - component: {fileID: 388811621}
   - component: {fileID: 388811620}
   - component: {fileID: 388811630}
@@ -26433,7 +26432,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 388811619}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2d0a6aa053d66a45a12ce16e397ecde, type: 3}
   m_Name: 
@@ -26727,18 +26726,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38a5baba0c182b744b4483aa690172bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CapaReactiva
---- !u!114 &388811638
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 388811619}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc41253f50df9cd469bc9d305598769e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SincronizadorAnimacion
 --- !u!1001 &389225845
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -101057,7 +101044,6 @@ GameObject:
   - component: {fileID: 1512524472}
   - component: {fileID: 1512524462}
   - component: {fileID: 1512524461}
-  - component: {fileID: 1512524476}
   - component: {fileID: 1512524468}
   - component: {fileID: 1512524460}
   - component: {fileID: 1512524459}
@@ -101149,7 +101135,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1512524457}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2d0a6aa053d66a45a12ce16e397ecde, type: 3}
   m_Name: 
@@ -101443,18 +101429,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38a5baba0c182b744b4483aa690172bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CapaReactiva
---- !u!114 &1512524476
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512524457}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc41253f50df9cd469bc9d305598769e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SincronizadorAnimacion
 --- !u!1001 &1517087518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -105716,7 +105690,6 @@ GameObject:
   - component: {fileID: 1586003697}
   - component: {fileID: 1586003696}
   - component: {fileID: 1586003695}
-  - component: {fileID: 1586003711}
   - component: {fileID: 1586003694}
   - component: {fileID: 1586003693}
   - component: {fileID: 1586003703}
@@ -105807,7 +105780,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1586003692}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2d0a6aa053d66a45a12ce16e397ecde, type: 3}
   m_Name: 
@@ -106101,18 +106074,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38a5baba0c182b744b4483aa690172bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CapaReactiva
---- !u!114 &1586003711
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1586003692}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc41253f50df9cd469bc9d305598769e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SincronizadorAnimacion
 --- !u!1001 &1587691277
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -123236,7 +123197,6 @@ GameObject:
   - component: {fileID: 1850501526}
   - component: {fileID: 1850501525}
   - component: {fileID: 1850501524}
-  - component: {fileID: 1850501540}
   - component: {fileID: 1850501523}
   - component: {fileID: 1850501522}
   - component: {fileID: 1850501532}
@@ -123327,7 +123287,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1850501521}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2d0a6aa053d66a45a12ce16e397ecde, type: 3}
   m_Name: 
@@ -123621,18 +123581,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38a5baba0c182b744b4483aa690172bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CapaReactiva
---- !u!114 &1850501540
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1850501521}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc41253f50df9cd469bc9d305598769e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SincronizadorAnimacion
 --- !u!1001 &1851899995
 PrefabInstance:
   m_ObjectHideFlags: 0

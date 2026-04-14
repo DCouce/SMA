@@ -6,26 +6,51 @@ public class Investigar : MonoBehaviour
 {
     public int radio = 3;   
     public int puntos = 3;        
-    public List<Vector3> puntos_investigacion = new List<Vector3>();
+    private List<Vector3> puntos_investigacion = new List<Vector3>();
 
     private NavMeshAgent agent;
     private Modelado modelo;
+    private Control control;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         modelo = GetComponent<Modelado>();
+        control = GetComponent<Control>();
     }
 
-    public void GenerateNewPatrolPath(Vector3 posicion)
+    // La Capa de Planificación llama a esto ANTES de proponer la acción
+    public void SetPuntoRuido(Vector3 posicion)
     {
         puntos_investigacion.Clear();
         for (int i = 0; i < puntos; i++)
         {
-            Vector3 randomPoint = GetValidNavMeshPoint(posicion, radio);
-            puntos_investigacion.Add(randomPoint);
+            puntos_investigacion.Add(GetValidNavMeshPoint(posicion, radio));
         }
+    }
+
+    void OnEnable()
+    {
         if(puntos_investigacion.Count > 0) agent.SetDestination(puntos_investigacion[0]);
+    }
+
+    void Update()
+    {
+        if (puntos_investigacion.Count == 0) return;
+
+        if (!agent.pathPending && agent.remainingDistance < 0.7f) 
+        {
+            puntos_investigacion.RemoveAt(0);
+            
+            if (puntos_investigacion.Count > 0) 
+                agent.SetDestination(puntos_investigacion[0]);
+            else 
+            {
+                // ¡HE TERMINADO! Limpiamos memoria y nos retiramos
+                modelo.MarcarRuidoComoAtendido();
+                control.RetirarPropuesta(Control.PRIORIDAD_PLANIFICACION);
+            }
+        }
     }
 
     private Vector3 GetValidNavMeshPoint(Vector3 center, int range)
@@ -38,44 +63,4 @@ public class Investigar : MonoBehaviour
         }
         return center; 
     }
-
-    public void Investigacion()
-    {
-        if (puntos_investigacion.Count == 0) return;
-
-        if (!agent.pathPending && agent.remainingDistance < 0.7f) 
-        {
-            puntos_investigacion.RemoveAt(0);
-            
-            if (puntos_investigacion.Count > 0) 
-            {
-                agent.SetDestination(puntos_investigacion[0]);
-            }
-            else 
-            {
-                // Si ya no quedan puntos, avisamos al modelo que ya no investigue
-                if (modelo != null) modelo.investigandoRuido = false;
-            }
-        }
-    }
-
-    void OnDrawGizmos() // Para ver los puntos generados
-    {
-        if (puntos_investigacion == null) return;
-        Gizmos.color = Color.cyan;
-        foreach (Vector3 p in puntos_investigacion)
-        {
-            Gizmos.DrawSphere(p, 0.5f);
-        }
-    }
-
-
-
-
-
-
-
-
-
-
 }
