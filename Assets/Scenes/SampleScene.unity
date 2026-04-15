@@ -123224,9 +123224,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1850501529}
-  - component: {fileID: 1850501528}
+  - component: {fileID: 1850501542}
   - component: {fileID: 1850501538}
-  - component: {fileID: 1850501537}
+  - component: {fileID: 1850501541}
   - component: {fileID: 1850501539}
   - component: {fileID: 1850501527}
   - component: {fileID: 1850501530}
@@ -123382,18 +123382,6 @@ MonoBehaviour:
   rangoVision: 5
   anguloVision: 45
   velocidadGiroManual: 5
---- !u!114 &1850501528
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1850501521}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 02ee065dd0f02ea4298eb1e7409baaee, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Guardia
 --- !u!4 &1850501529
 Transform:
   m_ObjectHideFlags: 0
@@ -123580,18 +123568,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2343d69bb41e0e344aad456d32b532b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Revisar
---- !u!114 &1850501537
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1850501521}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a992e5712e49a24cb1aa7ccf6faa457, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Planificacion
 --- !u!114 &1850501538
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123633,6 +123609,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc41253f50df9cd469bc9d305598769e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SincronizadorAnimacion
+--- !u!114 &1850501541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850501521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a992e5712e49a24cb1aa7ccf6faa457, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CapaPlanificacion
+--- !u!114 &1850501542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850501521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02ee065dd0f02ea4298eb1e7409baaee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Control
 --- !u!1001 &1851899995
 PrefabInstance:
   m_ObjectHideFlags: 0

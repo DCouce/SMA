@@ -15,19 +15,29 @@ public class Revisar : MonoBehaviour
         control = GetComponent<Control>();
     }
 
-    public void SetDestino(Vector3 posicion) => destino = posicion;
+    public void SetDestino(Vector3 posicion){
+        destino = posicion;
+        if (this.enabled && agent != null)
+        {
+            agent.destination = destino;
+        }
+    }
 
     void OnEnable()
     {
-        agent.destination = destino;
-        agent.speed = 0.8f;
-        cronometro = tiempoGiro;
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            agent.speed = 0.8f;
+            agent.destination = destino;
+        }
+        cronometro = tiempoGiro; // Reiniciamos el cronómetro al activar la acción
     }
 
     void Update()
     {
         // Si llegamos, giramos para simular que buscamos
-        if (!agent.pathPending && agent.remainingDistance < 0.3f)
+        if (!agent.pathPending && agent.hasPath && agent.remainingDistance < 0.3f)
         {   
             transform.Rotate(Vector3.up, 150f * Time.deltaTime);
             cronometro -= Time.deltaTime;

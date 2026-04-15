@@ -7,7 +7,7 @@ public class Control : MonoBehaviour
 
     public const int PRIORIDAD_REACTIVA = 2;
     public const int PRIORIDAD_PLANIFICACION = 1;
-
+    public System.Action OnPrioridadLibre; 
     public void RecibirPropuesta(int prioridadPropuesta, MonoBehaviour nuevaAccion)
     {
         if (prioridadPropuesta >= prioridadActual)
@@ -30,6 +30,8 @@ public class Control : MonoBehaviour
             if (accionActual != null) accionActual.enabled = false;
             prioridadActual = -1;
             accionActual = null;
+
+            OnPrioridadLibre?.Invoke();
         }
     }
 }

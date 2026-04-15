@@ -22,9 +22,13 @@ public class NavegacionPatrulla : MonoBehaviour
 
     // Al encenderse (cuando el Control lo decide), busca el punto más cercano
     void OnEnable()
-    {
-        indiceActual = ObtenerIndiceMasCercano();
-        ActualizarDestino();
+    {   
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            indiceActual = ObtenerIndiceMasCercano();
+            ActualizarDestino();
+        }
     }
 
     void Update()

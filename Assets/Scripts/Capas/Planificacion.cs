@@ -22,6 +22,7 @@ public class CapaPlanificacion : MonoBehaviour
     void OnEnable()
     {
         modelo.OnMemoriaActualizada += EvaluarSituacion;
+        control.OnPrioridadLibre += EvaluarSituacion;
         EvaluarSituacion(); // Evaluación inicial
     }
 
@@ -31,7 +32,7 @@ public class CapaPlanificacion : MonoBehaviour
         if (modelo.ladronALaVista) return;
 
         // 1. SOSPECHA: Si perdimos al ladrón hace poco, vamos a su última posición
-        if (modelo.TiempoSinVerLadron < 5f && modelo.TiempoSinVerLadron > 0)
+        if (modelo.TiempoSinVerLadron < 5f)
         {
             revisar.SetDestino(modelo.ultimaPosicionConocidaLadron);
             control.RecibirPropuesta(Control.PRIORIDAD_PLANIFICACION, revisar);
@@ -49,5 +50,8 @@ public class CapaPlanificacion : MonoBehaviour
         }
     }
 
-    void OnDisable() { if(modelo) modelo.OnMemoriaActualizada -= EvaluarSituacion; }
+    void OnDisable() { 
+        if(modelo) modelo.OnMemoriaActualizada -= EvaluarSituacion;
+        if(control) control.OnPrioridadLibre -= EvaluarSituacion;
+    }
 }
