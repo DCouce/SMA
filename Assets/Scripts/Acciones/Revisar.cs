@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public class Revisar : MonoBehaviour
 {
@@ -27,11 +28,11 @@ public class Revisar : MonoBehaviour
     {
         if (agent != null && agent.isOnNavMesh)
         {
+            agent.updateRotation = true;
             agent.isStopped = false;
             agent.speed = 0.8f;
             agent.destination = destino;
         }
-        cronometro = tiempoGiro; // Reiniciamos el cronómetro al activar la acción
     }
 
     void Update()
@@ -39,11 +40,27 @@ public class Revisar : MonoBehaviour
         // Si llegamos, giramos para simular que buscamos
         if (!agent.pathPending && agent.hasPath && agent.remainingDistance < 0.3f)
         {   
-            transform.Rotate(Vector3.up, 150f * Time.deltaTime);
-            cronometro -= Time.deltaTime;
-
-            if (cronometro <= 0) 
-                control.RetirarPropuesta(Control.PRIORIDAD_PLANIFICACION);
+            StartCoroutine(GirarYFinalizar());
+            agent.ResetPath();
         }
+    }
+
+    IEnumerator GirarYFinalizar()
+    {
+        agent.updateRotation = false;
+        
+        float tiempoFinal = Time.time + 3f;
+        
+        while (Time.time < tiempoFinal)
+        {
+            // Esto gira un poquito cada frame
+            transform.Rotate(Vector3.up, 150f * Time.deltaTime);
+            
+            // ESTA LÍNEA ES CLAVE: Le dice a Unity "Dibuja este frame y vuelve aquí en el siguiente"
+            yield return null; 
+        }
+
+        // Cuando pasan los 3 segundos, salimos del bucle y ejecutamos esto:
+        control.RetirarPropuesta(Control.PRIORIDAD_PLANIFICACION);
     }
 }
