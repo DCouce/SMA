@@ -34,10 +34,6 @@ public class Oido : MonoBehaviour
         ultimaPosicionReal = posicionRealDelRuido;
         tiempoUltimoSonido = Time.time;
 
-        // Guardamos los datos para la siguiente comparación
-        ultimaPosicionReal = posicionRealDelRuido;
-        tiempoUltimoSonido = Time.time;  
-
-        OnRuidoEscuchado?.Invoke(calculoConError);  
+        OnRuidoEscuchado?.Invoke(calculoConError);
     }
 }

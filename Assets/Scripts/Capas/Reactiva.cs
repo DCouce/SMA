@@ -36,5 +36,12 @@ public class CapaReactiva : MonoBehaviour
 
     private void PararEmergencia() => control.RetirarPropuesta(Control.PRIORIDAD_REACTIVA);
 
-    void OnDisable() { if(sensor) sensor.OnLadronVisto -= ReaccionarAlInstante; }
+    void OnDisable()
+    {
+        if (sensor)
+        {
+            sensor.OnLadronVisto -= ReaccionarAlInstante;
+            sensor.OnLadronPerdido -= PararEmergencia;
+        }
+    }
 }

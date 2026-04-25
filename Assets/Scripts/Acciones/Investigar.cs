@@ -52,7 +52,6 @@ public class Investigar : MonoBehaviour
                 agent.SetDestination(puntos_investigacion[0]);
             else 
             {
-                // ¡HE TERMINADO! Limpiamos memoria y nos retiramos
                 modelo.MarcarRuidoComoAtendido();
                 control.RetirarPropuesta(Control.PRIORIDAD_PLANIFICACION);
             }

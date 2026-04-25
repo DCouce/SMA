@@ -15,7 +15,7 @@ public class Control : MonoBehaviour
             if (accionActual != nuevaAccion)
             {
                 if (accionActual != null) accionActual.enabled = false; 
-                Debug.Log($"<color=cyan>[CONTROL]</color> Cambio de acción: <b>{nuevaAccion.GetType().Name}</b> (Prioridad: {prioridadPropuesta})");
+                Debug.Log($"<color=cyan>[CONTROL {gameObject.name}]</color> Cambio de acción: <b>{nuevaAccion.GetType().Name}</b> (Prioridad: {prioridadPropuesta})");
                 prioridadActual = prioridadPropuesta;
                 accionActual = nuevaAccion;
                 accionActual.enabled = true; 
