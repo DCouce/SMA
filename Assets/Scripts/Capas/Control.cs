@@ -2,23 +2,26 @@ using UnityEngine;
 
 public class Control : MonoBehaviour
 {
-    private int prioridadActual = -1; 
+    private int prioridadActual = -1;
     private MonoBehaviour accionActual;
 
-    public const int PRIORIDAD_REACTIVA = 2;
+    public const int PRIORIDAD_REACTIVA     = 3;
+    public const int PRIORIDAD_SUBASTA      = 2;
     public const int PRIORIDAD_PLANIFICACION = 1;
-    public System.Action OnPrioridadLibre; 
+
+    public System.Action OnPrioridadLibre;
+
     public void RecibirPropuesta(int prioridadPropuesta, MonoBehaviour nuevaAccion)
     {
         if (prioridadPropuesta >= prioridadActual)
         {
             if (accionActual != nuevaAccion)
             {
-                if (accionActual != null) accionActual.enabled = false; 
+                if (accionActual != null) accionActual.enabled = false;
                 Debug.Log($"<color=cyan>[CONTROL {gameObject.name}]</color> Cambio de acción: <b>{nuevaAccion.GetType().Name}</b> (Prioridad: {prioridadPropuesta})");
                 prioridadActual = prioridadPropuesta;
-                accionActual = nuevaAccion;
-                accionActual.enabled = true; 
+                accionActual    = nuevaAccion;
+                accionActual.enabled = true;
             }
         }
     }
@@ -29,7 +32,7 @@ public class Control : MonoBehaviour
         {
             if (accionActual != null) accionActual.enabled = false;
             prioridadActual = -1;
-            accionActual = null;
+            accionActual    = null;
 
             OnPrioridadLibre?.Invoke();
         }
