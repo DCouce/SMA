@@ -32,12 +32,16 @@ public class Investigar : MonoBehaviour
     void OnEnable()
     {
         if (agent != null && agent.isOnNavMesh)
-        {   
+        {
             agent.isStopped = false;
-            if(puntos_investigacion.Count > 0){
-            agent.SetDestination(puntos_investigacion[0]);
-            }
+            if (puntos_investigacion.Count > 0)
+                agent.SetDestination(puntos_investigacion[0]);
         }
+    }
+
+    void OnDisable()
+    {
+        if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
     }
 
     void Update()

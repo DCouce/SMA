@@ -6,6 +6,7 @@ public class Revisar : MonoBehaviour
 {
     private NavMeshAgent agent;
     private Control control;
+    private Modelado modelo;
     private Vector3 destino;
     private float tiempoGiro = 3f;
 
@@ -13,6 +14,7 @@ public class Revisar : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         control = GetComponent<Control>();
+        modelo = GetComponent<Modelado>();
     }
 
     public void SetDestino(Vector3 posicion){
@@ -47,7 +49,11 @@ public class Revisar : MonoBehaviour
     void OnDisable()
     {
         StopAllCoroutines();
-        if (agent != null) agent.updateRotation = true;
+        if (agent != null)
+        {
+            agent.updateRotation = true;
+            agent.isStopped = true;
+        }
     }
 
     IEnumerator GirarYFinalizar()
@@ -63,6 +69,7 @@ public class Revisar : MonoBehaviour
         }
 
         agent.updateRotation = true;
+        modelo.MarcarPosicionRevisada();
         control.RetirarPropuesta(Control.PRIORIDAD_PLANIFICACION);
     }
 }

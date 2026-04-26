@@ -14,6 +14,7 @@ public class Modelado : MonoBehaviour
     public bool sabeRobado = false;
     public bool ladronALaVista = false;
     public bool hayRuidoSinInvestigar = false;
+    public bool posicionYaRevisada = false;
     
     [Header("Ubicaciones Importantes")]
     public Vector3 ultimaPosicionConocidaLadron;
@@ -74,13 +75,14 @@ public class Modelado : MonoBehaviour
     {
         ladronALaVista = true;
         ultimaPosicionConocidaLadron = posicion;
+        posicionYaRevisada = false; // Nueva posición conocida, pendiente de revisar
         tiempoUltimoAvistamientoLadron = Time.time;
 
         if (llevaElCuadro && !sabeRobado)
         {
             sabeRobado = true;
         }
-        OnMemoriaActualizada?.Invoke(); 
+        OnMemoriaActualizada?.Invoke();
     }
 
     public void RegistrarPerderLadron()
@@ -115,5 +117,11 @@ public class Modelado : MonoBehaviour
     {
         hayRuidoSinInvestigar = false;
         OnMemoriaActualizada?.Invoke();
+    }
+
+    public void MarcarPosicionRevisada()
+    {
+        posicionYaRevisada = true;
+        // Sin evento: RetirarPropuesta disparará OnPrioridadLibre y re-evaluará
     }
 }

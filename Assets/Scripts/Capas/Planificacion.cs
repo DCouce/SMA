@@ -31,8 +31,8 @@ public class CapaPlanificacion : MonoBehaviour
         // Si hay una emergencia reactiva (ladrón visible), esta capa no interfiere
         if (modelo.ladronALaVista) return;
 
-        // 1. SOSPECHA: Si perdimos al ladrón hace poco, vamos a su última posición
-        if (modelo.TiempoSinVerLadron < 5f)
+        // 1. SOSPECHA: Si perdimos al ladrón hace poco y aún no revisamos esa posición
+        if (modelo.TiempoSinVerLadron < 5f && !modelo.posicionYaRevisada)
         {
             revisar.SetDestino(modelo.ultimaPosicionConocidaLadron);
             control.RecibirPropuesta(Control.PRIORIDAD_PLANIFICACION, revisar);
