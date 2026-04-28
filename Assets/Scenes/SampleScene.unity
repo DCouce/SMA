@@ -6776,7 +6776,7 @@ Transform:
   m_GameObject: {fileID: 93336807}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.9790425, y: 0, z: 1.9125571}
+  m_LocalPosition: {x: -1.55, y: 0, z: 1.34}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6801,7 +6801,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.154471, y: 1, z: 5.0227575}
+  m_Size: {x: 5.5, y: 1, z: 6}
   m_Center: {x: 5.693486, y: 0, z: -3.850206}
 --- !u!1001 &93502401
 PrefabInstance:
@@ -26403,6 +26403,7 @@ GameObject:
   - component: {fileID: 388811641}
   - component: {fileID: 388811640}
   - component: {fileID: 388811639}
+  - component: {fileID: 388811642}
   m_Layer: 7
   m_Name: Guardia4
   m_TagString: Untagged
@@ -26820,6 +26821,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92f1304fcba233a4ab772e11aa1ad838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Subastador
+  tiempoEsperaPropuestas: 0.3
 --- !u!114 &388811641
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26832,6 +26834,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf638bf5984118547b8861f08479597d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Comunicacion
+--- !u!114 &388811642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388811619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
 --- !u!1001 &389225845
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28464,7 +28478,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fba008c8f5320de4cac0d81215a1b69f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Zona
-  nombreZona: 
+  nombreZona: Zona5
   puntosEntrada:
   - {fileID: 964218466}
 --- !u!1001 &403194255
@@ -91099,7 +91113,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fba008c8f5320de4cac0d81215a1b69f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Zona
-  nombreZona: 
+  nombreZona: Zona4
   puntosEntrada:
   - {fileID: 420549954}
   - {fileID: 1633006697}
@@ -101715,7 +101729,7 @@ Transform:
   m_GameObject: {fileID: 1504969077}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.3420201, z: 0, w: 0.9396927}
-  m_LocalPosition: {x: 0.1304946, y: 0, z: 7.03872}
+  m_LocalPosition: {x: -0.58, y: 0, z: 7.63}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -101740,7 +101754,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.2260985, y: 1, z: 3.4248438}
+  m_Size: {x: 3, y: 1, z: 4}
   m_Center: {x: 7.1350465, y: 0, z: -7.143918}
 --- !u!1 &1505931153 stripped
 GameObject:
@@ -101868,6 +101882,7 @@ GameObject:
   - component: {fileID: 1512524479}
   - component: {fileID: 1512524478}
   - component: {fileID: 1512524477}
+  - component: {fileID: 1512524480}
   m_Layer: 7
   m_Name: Guardia1
   m_TagString: Untagged
@@ -102285,6 +102300,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92f1304fcba233a4ab772e11aa1ad838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Subastador
+  tiempoEsperaPropuestas: 0.3
 --- !u!114 &1512524479
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -102297,6 +102313,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf638bf5984118547b8861f08479597d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Comunicacion
+--- !u!114 &1512524480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512524457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
 --- !u!1001 &1517087518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -105772,7 +105800,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fba008c8f5320de4cac0d81215a1b69f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Zona
-  nombreZona: 
+  nombreZona: Zona3
   puntosEntrada:
   - {fileID: 553507634}
   - {fileID: 1497089739}
@@ -106618,6 +106646,7 @@ GameObject:
   - component: {fileID: 1586003714}
   - component: {fileID: 1586003713}
   - component: {fileID: 1586003712}
+  - component: {fileID: 1586003715}
   m_Layer: 7
   m_Name: Guardia2
   m_TagString: Untagged
@@ -107035,6 +107064,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92f1304fcba233a4ab772e11aa1ad838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Subastador
+  tiempoEsperaPropuestas: 0.3
 --- !u!114 &1586003714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107047,6 +107077,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf638bf5984118547b8861f08479597d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Comunicacion
+--- !u!114 &1586003715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1586003692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
 --- !u!1001 &1587691277
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -114813,7 +114855,7 @@ Transform:
   m_GameObject: {fileID: 1704512147}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.9790425, y: 0, z: 1.9125571}
+  m_LocalPosition: {x: -5.23, y: 0, z: 1.74}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -114838,7 +114880,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.16938, y: 1, z: 6.1527643}
+  m_Size: {x: 4.5, y: 1, z: 6.1527643}
   m_Center: {x: 4.3020153, y: 0, z: -0.96582377}
 --- !u!1001 &1706780436
 PrefabInstance:
@@ -124399,6 +124441,7 @@ GameObject:
   - component: {fileID: 1850501545}
   - component: {fileID: 1850501544}
   - component: {fileID: 1850501543}
+  - component: {fileID: 1850501546}
   m_Layer: 7
   m_Name: Guardia3
   m_TagString: Untagged
@@ -124816,6 +124859,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92f1304fcba233a4ab772e11aa1ad838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Subastador
+  tiempoEsperaPropuestas: 0.3
 --- !u!114 &1850501545
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124828,6 +124872,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf638bf5984118547b8861f08479597d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Comunicacion
+--- !u!114 &1850501546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850501521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
 --- !u!1001 &1851899995
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -141418,7 +141474,7 @@ Transform:
   m_GameObject: {fileID: 2129098637}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.9790425, y: 0, z: 3.9125571}
+  m_LocalPosition: {x: -3.9790425, y: 0, z: 4.14}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
