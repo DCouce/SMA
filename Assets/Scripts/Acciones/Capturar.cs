@@ -17,7 +17,7 @@ public class Capturar : MonoBehaviour
         juegoTerminado = true;
 
         // Notificar a todos los guardias para que liberen sus asignaciones
-        var msj = new MensajeFIPA(FIPAPerformativa.Request,
+        var msj = new MensajeFIPA("Request",
         GetComponent<Comunicacion>(), "cancelar-contrato");
 
         GetComponent<Comunicacion>().Difundir(msj);        

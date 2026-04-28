@@ -73,7 +73,7 @@ public class CapaReactiva : MonoBehaviour
         };
 
         MensajeFIPA inform = new MensajeFIPA(
-            FIPAPerformativa.Inform,
+            "Inform",
             comms,
             $"(posicion-ladron (= (ubicacion ladron) " +
             $"(coord {pos.x:F1} {pos.y:F1} {pos.z:F1})) " +
@@ -81,7 +81,6 @@ public class CapaReactiva : MonoBehaviour
             convIdInformActual,
             "fipa-request");
         inform.contenidoObjeto = contenido;
-        inform.ontology        = "museo-seguridad";
 
         comms.Difundir(inform);
     }

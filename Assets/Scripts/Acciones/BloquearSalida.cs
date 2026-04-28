@@ -61,7 +61,7 @@ public class BloquearSalida : MonoBehaviour
             if (gestorActual != null && comms != null)
             {
                 MensajeFIPA informDone = new MensajeFIPA(
-                    FIPAPerformativa.InformDone,
+                    "InformDone",
                     comms,
                     $"(inform-done (action {gameObject.name} " +
                     $"(ir-a (coord {puntoGuardia.x:F1} {puntoGuardia.y:F1} {puntoGuardia.z:F1}))))",

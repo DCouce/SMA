@@ -5,7 +5,7 @@ using System;
 public class MensajeFIPA
 {
     // Performativa del mensaje (tipo de acto comunicativo)
-    public FIPAPerformativa performativa;
+    public string performativa;
 
     // Agente que envía el mensaje
     public Comunicacion sender;
@@ -18,12 +18,6 @@ public class MensajeFIPA
 
     // Objeto C# que representa el contenido tipado (posición, oferta, etc.)
     public object contenidoObjeto;
-
-    // Lenguaje en el que está expresado el contenido
-    public string language = "FIPA-SL";
-
-    // Ontología que da significado a los símbolos del contenido
-    public string ontology = "museo-seguridad";
 
     // Protocolo de interacción seguido (p.ej. "fipa-contract-net", "fipa-request")
     public string protocol;
@@ -39,7 +33,7 @@ public class MensajeFIPA
 
     // Constructor con los campos mínimos necesarios
     public MensajeFIPA(
-        FIPAPerformativa performativa,
+        string performativa,
         Comunicacion sender,
         string content,
         string conversationId = null,
@@ -67,12 +61,10 @@ public class MensajeFIPA
             ? string.Join(", ", Array.ConvertAll(receiver, r => r?.gameObject.name ?? "?"))
             : "broadcast";
 
-        return $"({performativa.ToString().ToLower()}\n" +
+        return $"  :performativa {performativa}\n" +
                $"  :sender {sender?.gameObject.name ?? "?"}\n" +
                $"  :receiver (set {recv})\n" +
                $"  :content \"{content}\"\n" +
-               $"  :language {language}\n" +
-               $"  :ontology {ontology}\n" +
                (protocol       != null ? $"  :protocol {protocol}\n"             : "") +
                (conversationId != null ? $"  :conversation-id {conversationId}\n" : "") +
                (replyWith      != null ? $"  :reply-with {replyWith}\n"          : "") +

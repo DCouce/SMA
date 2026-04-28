@@ -91,14 +91,13 @@ public class GestorContractNet : MonoBehaviour
                 $"(coord {p.position.x:F1} {p.position.y:F1} {p.position.z:F1})"));
 
         MensajeFIPA cfp = new MensajeFIPA(
-            FIPAPerformativa.CallForProposal,
+            "CallForProposal",
             comms,
             $"(action ?agente (bloquear-salida (set {puntosStr})))",
             conversationIdActual,
             "fipa-contract-net");
         cfp.contenidoObjeto = contenidoCFP;
         cfp.replyWith       = replyWithCFP;
-        cfp.ontology        = "museo-seguridad";
 
         comms.Difundir(cfp);
 
@@ -142,7 +141,7 @@ public class GestorContractNet : MonoBehaviour
         ContenidoTareaAsignada tarea = new ContenidoTareaAsignada { puntoDestino = punto };
 
         MensajeFIPA accept = new MensajeFIPA(
-            FIPAPerformativa.AcceptProposal,
+            "AcceptProposal",
             comms,
             $"(accept-proposal (action {ganadora.sender?.gameObject.name} " +
             $"(ir-a (coord {punto.x:F1} {punto.y:F1} {punto.z:F1}))) true)",
@@ -159,7 +158,7 @@ public class GestorContractNet : MonoBehaviour
             MensajeFIPA perdedora = propuestas[i];
 
             MensajeFIPA reject = new MensajeFIPA(
-                FIPAPerformativa.RejectProposal,
+                "RejectProposal",
                 comms,
                 $"(reject-proposal (action {perdedora.sender?.gameObject.name} bloquear-salida) " +
                 $"(mejor-oferta-seleccionada))",

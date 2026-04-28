@@ -66,31 +66,31 @@ public class Conversacion
     }
 
     // Actualiza el estado siguiendo el flujo del FIPA Contract Net IP
-    private void ActualizarEstado(FIPAPerformativa performativa)
+    private void ActualizarEstado(string performativa)
     {
         switch (performativa)
         {
-            case FIPAPerformativa.CallForProposal:
-            case FIPAPerformativa.Request:
+            case "CallForProposal":
+            case "Request":
                 estado = EstadoConversacion.Iniciada;
                 break;
 
-            case FIPAPerformativa.Propose:
-            case FIPAPerformativa.Agree:
+            case "Propose":
+            case "Agree":
                 estado = EstadoConversacion.EnNegociacion;
                 break;
 
-            case FIPAPerformativa.AcceptProposal:
+            case "AcceptProposal":
                 estado = EstadoConversacion.EnEjecucion;
                 break;
 
-            case FIPAPerformativa.InformDone:
+            case "InformDone":
                 estado = EstadoConversacion.Completada;
                 break;
 
-            case FIPAPerformativa.Failure:
-            case FIPAPerformativa.RejectProposal:
-            case FIPAPerformativa.Refuse:
+            case "Failure":
+            case "RejectProposal":
+            case "Refuse":
                 // Solo es fallo definitivo si no hay otros participantes activos
                 if (estado != EstadoConversacion.EnEjecucion)
                     estado = EstadoConversacion.Fallida;
