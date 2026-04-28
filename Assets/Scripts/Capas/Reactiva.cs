@@ -14,6 +14,10 @@ public class CapaReactiva : MonoBehaviour
     private const float COOLDOWN_INFORM = 0.5f;
     private string convIdInformActual;
 
+    // Recordamos la última zona para la que disparamos un CFP.
+    // Solo lanzamos uno nuevo si el ladrón cambia de zona.
+    private Zona ultimaZonaCFP;
+
     void Awake()
     {
         sensor    = GetComponent<SensorVision>();
@@ -39,27 +43,26 @@ public class CapaReactiva : MonoBehaviour
         if (distancia < 0.2f)
         {
             control.RecibirPropuesta(Control.PRIORIDAD_REACTIVA, capturar);
+            return;
         }
-        else
-        {
-            perseguir.ActualizarObjetivo(pos);
-            control.RecibirPropuesta(Control.PRIORIDAD_REACTIVA, perseguir);
 
-            // Pedir a los demás guardias que bloqueen las salidas de la zona
-            Zona zona = GestorZonas.Instance?.ObtenerZona(pos);
+        perseguir.ActualizarObjetivo(pos);
+        control.RecibirPropuesta(Control.PRIORIDAD_REACTIVA, perseguir);
 
-            if (zona != null && zona.puntosEntrada.Length > 0)
-                gestor.IniciarContractNet(new List<Transform>(zona.puntosEntrada));
-        }
+        // Solo lanzamos un nuevo Contract Net si la zona del ladrón cambió.
+        Zona zonaActual = GestorZonas.Instance?.ObtenerZona(pos);
+        if (zonaActual == null || zonaActual.puntosEntrada.Length == 0) return;
+        if (zonaActual == ultimaZonaCFP) return;
+
+        ultimaZonaCFP = zonaActual;
+        gestor.IniciarContractNet(
+            new List<Transform>(zonaActual.puntosEntrada),
+            zonaActual.nombreZona);
     }
 
-    // Difunde la posición conocida del ladrón a los demás guardias
-    // mediante un Inform FIPA-ACL. Esto actualiza las creencias de los
-    // agentes que no tienen línea de visión directa.
     private void CompartirPosicionLadron(Vector3 pos, bool llevaElCuadro)
     {
         if (comms == null) return;
-
         if (Time.time - tiempoUltimoInform < COOLDOWN_INFORM) return;
         tiempoUltimoInform = Time.time;
 
@@ -88,6 +91,7 @@ public class CapaReactiva : MonoBehaviour
     private void PararEmergencia()
     {
         convIdInformActual = null;
+        ultimaZonaCFP      = null;   // al perderlo de vista, volvemos a empezar
         control.RetirarPropuesta(Control.PRIORIDAD_REACTIVA);
     }
 

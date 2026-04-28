@@ -80,6 +80,7 @@ public class MensajeFIPA
 public struct ContenidoCFP
 {
     public Transform[] puntosASalida;
+    public string zonaNombre;
 }
 
 // Contenido de un Propose: oferta de un agente contratista
@@ -95,6 +96,7 @@ public struct ContenidoPropose
 public struct ContenidoTareaAsignada
 {
     public Vector3 puntoDestino;
+    public string zonaNombre;
 }
 
 // Contenido de un Inform para compartir la posición del ladrón
@@ -104,3 +106,4 @@ public struct ContenidoInformPosicion
     public Vector3 posicion;
     public bool llevaElCuadro;
 }
+

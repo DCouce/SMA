@@ -107,7 +107,7 @@ public class ProcesarComunicacion : MonoBehaviour
         conversacionBloqueActiva = msj.conversationId;
         Debug.Log($"<color=cyan>[FIPA]</color> {gameObject.name}: tarea aceptada → {tarea.puntoDestino}");
 
-        bloquearSalida.SetPunto(tarea.puntoDestino, msj.sender, msj.conversationId);
+        bloquearSalida.SetPunto(tarea.puntoDestino, msj.sender, msj.conversationId, tarea.zonaNombre);
         control.RecibirPropuesta(Control.PRIORIDAD_SUBASTA, bloquearSalida);
 
         // Confirmamos con Agree
@@ -132,6 +132,34 @@ public class ProcesarComunicacion : MonoBehaviour
             modelo.RegistrarPerderLadron();                   
         }
     }
+
+    // Recibe un Cancel: si tenemos asignada esa conversación, abandonamos
+    // el bloqueo y respondemos con InformDone (cancelación confirmada).
+    public void ProcesarCancel(MensajeFIPA cancel)
+    {
+        if (bloquearSalida == null) return;
+
+        // Solo nos atañe si la conversación cancelada es la nuestra activa
+        if (bloquearSalida.ConversacionActual() != cancel.conversationId) return;
+
+        Debug.Log($"<color=yellow>[CANCEL]</color> {gameObject.name} abandona bloqueo " +
+                $"conv:{cancel.conversationId}");
+
+        // Liberar el control: PRIORIDAD_SUBASTA queda libre y la planificación
+        // recolocará al guardia en patrulla automáticamente
+        control.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);
+
+        MensajeFIPA informDone = new MensajeFIPA(
+            "InformDone",
+            comms,
+            "(inform-done (cancel-confirmado))",
+            cancel.conversationId,
+            "fipa-contract-net");
+        informDone.inReplyTo = cancel.replyWith;
+        comms.Enviar(cancel.sender, informDone);
+    }
+
+
     public float CalcularCosteNavMesh(Vector3 destino)
     {
         NavMeshPath path = new NavMeshPath();

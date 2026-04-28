@@ -1,20 +1,23 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-// Acción de planificación: el guardia navega a un punto de salida y espera allí.
-// La capa reactiva puede interrumpirla (perseguir tiene prioridad mayor).
-// Cuando llega a posición, queda parado y notifica al gestor con InformDone.
 public class BloquearSalida : MonoBehaviour
 {
     private NavMeshAgent agent;
     private Comunicacion comms;
 
-    private bool enPosicion = false;
+    private bool    enPosicion       = false;
+    private bool    buscandoEnZona   = false;
+    private float   tSiguienteDestino;
     private Vector3 puntoGuardia;
+    private string  zonaNombre;
+    private Zona    zonaCache;
 
-    // Contexto de la conversación FIPA que activó esta tarea
     private Comunicacion gestorActual;
-    private string convIdActual;
+    private string       convIdActual;
+
+    private const float INTERVALO_BUSQUEDA = 4f;
+    public string ConversacionActual() => convIdActual;
 
     void Awake()
     {
@@ -22,15 +25,18 @@ public class BloquearSalida : MonoBehaviour
         comms = GetComponent<Comunicacion>();
     }
 
-    // Llamado desde Comunicacion al recibir un AcceptProposal.
-    // Recibe el punto a cubrir y el contexto de la conversación para
-    // poder enviar el InformDone al completar.
-    public void SetPunto(Vector3 punto, Comunicacion gestor = null, string convId = null)
+    public void SetPunto(Vector3 punto, Comunicacion gestor = null,
+                         string convId = null, string nombreZona = null)
     {
-        puntoGuardia = punto;
-        gestorActual = gestor;
-        convIdActual = convId;
-        enPosicion   = false;
+        puntoGuardia    = punto;
+        gestorActual    = gestor;
+        convIdActual    = convId;
+        zonaNombre      = nombreZona;
+        zonaCache       = !string.IsNullOrEmpty(nombreZona)
+                            ? GestorZonas.Instance?.ObtenerZonaPorNombre(nombreZona)
+                            : null;
+        enPosicion      = false;
+        buscandoEnZona  = false;
 
         if (this.enabled && agent != null && agent.isOnNavMesh)
             agent.SetDestination(puntoGuardia);
@@ -38,44 +44,94 @@ public class BloquearSalida : MonoBehaviour
 
     void OnEnable()
     {
-        enPosicion = false;
+        enPosicion     = false;
+        buscandoEnZona = false;
         if (agent != null && agent.isOnNavMesh)
         {
             agent.isStopped = false;
-            agent.speed = 0.8f;
+            agent.speed     = 0.8f;
             agent.SetDestination(puntoGuardia);
         }
     }
 
     void Update()
     {
-        if (enPosicion) return;
-
-        if (!agent.pathPending && agent.hasPath && agent.remainingDistance < 0.4f)
+        // Fase 1: ir al punto de bloqueo
+        if (!enPosicion)
         {
-            enPosicion = true;
-            agent.isStopped = true;
-            Debug.Log($"<color=blue>[BLOQUEO]</color> {gameObject.name} en posición de guardia en {puntoGuardia}.");
-
-            // Notificar al gestor que hemos completado la tarea
-            if (gestorActual != null && comms != null)
+            if (!agent.pathPending && agent.hasPath && agent.remainingDistance < 0.4f)
             {
-                MensajeFIPA informDone = new MensajeFIPA(
-                    "InformDone",
-                    comms,
-                    $"(inform-done (action {gameObject.name} " +
-                    $"(ir-a (coord {puntoGuardia.x:F1} {puntoGuardia.y:F1} {puntoGuardia.z:F1}))))",
-                    convIdActual,
-                    "fipa-contract-net");
+                enPosicion      = true;
+                agent.isStopped = true;
 
-                comms.Enviar(gestorActual, informDone);
+                Debug.Log($"<color=blue>[BLOQUEO]</color> {gameObject.name} en posición en {puntoGuardia}.");
+
+                EnviarInformDone();
+
+                // Pasamos a buscar dentro de la zona si la conocemos
+                if (zonaCache != null)
+                {
+                    buscandoEnZona     = true;
+                    tSiguienteDestino  = Time.time + 0.5f;
+                }
+            }
+            return;
+        }
+
+        // Fase 2: rondas dentro de la zona buscando al ladrón
+        if (buscandoEnZona && zonaCache != null)
+        {
+            bool llegoAlDestino = !agent.pathPending && agent.remainingDistance < 0.5f;
+            if (llegoAlDestino && Time.time >= tSiguienteDestino)
+            {
+                Vector3 nuevoDestino = ElegirPuntoAleatorioEnZona();
+                agent.isStopped = false;
+                agent.SetDestination(nuevoDestino);
+                tSiguienteDestino = Time.time + INTERVALO_BUSQUEDA;
             }
         }
+    }
+
+    private Vector3 ElegirPuntoAleatorioEnZona()
+    {
+        BoxCollider[] cols = zonaCache.GetComponentsInChildren<BoxCollider>();
+        if (cols == null || cols.Length == 0) return puntoGuardia;
+
+        BoxCollider c = cols[Random.Range(0, cols.Length)];
+        Bounds b = c.bounds;
+
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 candidato = new Vector3(
+                Random.Range(b.min.x, b.max.x),
+                puntoGuardia.y,
+                Random.Range(b.min.z, b.max.z));
+
+            if (NavMesh.SamplePosition(candidato, out NavMeshHit hit, 1f, NavMesh.AllAreas))
+                return hit.position;
+        }
+        return puntoGuardia;
+    }
+
+    private void EnviarInformDone()
+    {
+        if (gestorActual == null || comms == null) return;
+
+        MensajeFIPA informDone = new MensajeFIPA(
+            "InformDone",
+            comms,
+            $"(inform-done (action {gameObject.name} " +
+            $"(ir-a (coord {puntoGuardia.x:F1} {puntoGuardia.y:F1} {puntoGuardia.z:F1}))))",
+            convIdActual,
+            "fipa-contract-net");
+
+        comms.Enviar(gestorActual, informDone);
     }
 
     void OnDisable()
     {
         if (agent != null && agent.isOnNavMesh) agent.isStopped = true;
-        enPosicion = false;
+        enPosicion     = false;
+        buscandoEnZona = false;
     }
 }

@@ -26394,6 +26394,7 @@ GameObject:
   - component: {fileID: 388811624}
   - component: {fileID: 388811633}
   - component: {fileID: 388811623}
+  - component: {fileID: 388811639}
   - component: {fileID: 388811622}
   - component: {fileID: 388811638}
   - component: {fileID: 388811621}
@@ -26402,8 +26403,8 @@ GameObject:
   - component: {fileID: 388811629}
   - component: {fileID: 388811641}
   - component: {fileID: 388811640}
-  - component: {fileID: 388811639}
   - component: {fileID: 388811642}
+  - component: {fileID: 388811643}
   m_Layer: 7
   m_Name: Guardia4
   m_TagString: Untagged
@@ -26846,6 +26847,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
+--- !u!114 &388811643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388811619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8402631979efa140a232d7be1e54ec9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProcesarComunicacion
 --- !u!1001 &389225845
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -101873,6 +101886,7 @@ GameObject:
   - component: {fileID: 1512524472}
   - component: {fileID: 1512524462}
   - component: {fileID: 1512524461}
+  - component: {fileID: 1512524477}
   - component: {fileID: 1512524476}
   - component: {fileID: 1512524468}
   - component: {fileID: 1512524460}
@@ -101881,8 +101895,8 @@ GameObject:
   - component: {fileID: 1512524467}
   - component: {fileID: 1512524479}
   - component: {fileID: 1512524478}
-  - component: {fileID: 1512524477}
   - component: {fileID: 1512524480}
+  - component: {fileID: 1512524481}
   m_Layer: 7
   m_Name: Guardia1
   m_TagString: Untagged
@@ -102325,6 +102339,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
+--- !u!114 &1512524481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512524457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8402631979efa140a232d7be1e54ec9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProcesarComunicacion
 --- !u!1001 &1517087518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -106637,6 +106663,7 @@ GameObject:
   - component: {fileID: 1586003707}
   - component: {fileID: 1586003697}
   - component: {fileID: 1586003696}
+  - component: {fileID: 1586003712}
   - component: {fileID: 1586003695}
   - component: {fileID: 1586003711}
   - component: {fileID: 1586003694}
@@ -106645,8 +106672,8 @@ GameObject:
   - component: {fileID: 1586003702}
   - component: {fileID: 1586003714}
   - component: {fileID: 1586003713}
-  - component: {fileID: 1586003712}
   - component: {fileID: 1586003715}
+  - component: {fileID: 1586003716}
   m_Layer: 7
   m_Name: Guardia2
   m_TagString: Untagged
@@ -107089,6 +107116,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
+--- !u!114 &1586003716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1586003692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8402631979efa140a232d7be1e54ec9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProcesarComunicacion
 --- !u!1001 &1587691277
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -124432,6 +124471,7 @@ GameObject:
   - component: {fileID: 1850501536}
   - component: {fileID: 1850501526}
   - component: {fileID: 1850501525}
+  - component: {fileID: 1850501543}
   - component: {fileID: 1850501524}
   - component: {fileID: 1850501540}
   - component: {fileID: 1850501523}
@@ -124440,8 +124480,8 @@ GameObject:
   - component: {fileID: 1850501531}
   - component: {fileID: 1850501545}
   - component: {fileID: 1850501544}
-  - component: {fileID: 1850501543}
   - component: {fileID: 1850501546}
+  - component: {fileID: 1850501547}
   m_Layer: 7
   m_Name: Guardia3
   m_TagString: Untagged
@@ -124884,6 +124924,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
+--- !u!114 &1850501547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850501521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8402631979efa140a232d7be1e54ec9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProcesarComunicacion
 --- !u!1001 &1851899995
 PrefabInstance:
   m_ObjectHideFlags: 0

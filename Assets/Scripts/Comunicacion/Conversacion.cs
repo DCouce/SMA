@@ -87,6 +87,10 @@ public class Conversacion
             case "InformDone":
                 estado = EstadoConversacion.Completada;
                 break;
+            
+            case "Cancel":
+                estado = EstadoConversacion.Cancelada;
+                break;
 
             case "Failure":
             case "RejectProposal":

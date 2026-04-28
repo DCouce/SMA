@@ -126,6 +126,10 @@ public class Comunicacion : MonoBehaviour
                 // Evitar responder a un NotUnderstood con otro NotUnderstood
                 Debug.LogWarning($"[{gameObject.name}] NotUnderstood recibido de {msj.sender?.gameObject.name}: {msj.content}");
                 break;
+            
+            case "Cancel":
+                procesador.ProcesarCancel(msj);
+                break;
 
             // Performativa no reconocida
             default:
