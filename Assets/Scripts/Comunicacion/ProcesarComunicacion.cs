@@ -41,6 +41,21 @@ public class ProcesarComunicacion : MonoBehaviour
             return;
         }
 
+        // Desempate determinista: dos agentes lanzaron subasta simultáneamente.
+        // El de nombre lexicográficamente mayor cede y participa como contratista.
+        if (gestorCN != null && gestorCN.SubastaActiva)
+        {
+            int cmp = string.Compare(gameObject.name, cfp.sender.gameObject.name,
+                                     StringComparison.Ordinal);
+            if (cmp < 0)
+            {
+                // Ganamos el desempate: nuestra subasta continúa, ignoramos este CFP.
+                return;
+            }
+            // Perdemos el desempate: abortamos nuestra subasta y pujamos en la del sender.
+            gestorCN.AbortarSubasta();
+        }
+
         // Si ya hay una tarea de bloqueo de salida en ejecución, rechazamos
         // Se consulta el historial para saberlo
         if (historial != null && historial.EstaBloqueandoSalida())

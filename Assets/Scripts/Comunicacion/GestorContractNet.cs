@@ -25,6 +25,8 @@ public class GestorContractNet : MonoBehaviour
     private bool subastaActiva = false;
     private string conversationIdActual;
 
+    public bool SubastaActiva => subastaActiva;
+
     // Propuestas recibidas en la ronda actual: punto → lista de propuestas
     private readonly Dictionary<Vector3, List<MensajeFIPA>> propuestasPorPunto
         = new Dictionary<Vector3, List<MensajeFIPA>>();
@@ -39,7 +41,17 @@ public class GestorContractNet : MonoBehaviour
         historial = GetComponent<HistorialConversaciones>();
     }
 
-    // API PÚBLICA (llamada desde CapaReactiva)
+    // API PÚBLICA (llamada desde CapaReactiva y ProcesarComunicacion)
+
+    // Aborta la subasta en curso cuando perdemos el desempate con otro gestor simultáneo.
+    public void AbortarSubasta()
+    {
+        StopAllCoroutines();
+        subastaActiva = false;
+        propuestasPorPunto.Clear();
+        puntosPendientes.Clear();
+        Debug.Log($"[{gameObject.name}] Subasta abortada por desempate (otro gestor tiene prioridad).");
+    }
 
     // Inicia una nueva ronda Contract Net para cubrir los puntos de salida dados.
     // Si ya hay una subasta activa, no lanza otra.
