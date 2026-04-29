@@ -103,6 +103,21 @@ public class Mensajeria : MonoBehaviour
                 procesador.ProcesarInform(msj);
                 break;
 
+            // ── NUEVO: Inform cuadro robado ──
+            case "InformCuadroRobado":
+                procesador.ProcesarInformCuadroRobado(msj);
+                break;
+
+            // ── NUEVO: QueryIf (¿eras tú el ruido?) ──
+            case "QueryIf":
+                procesador.ProcesarQueryIf(msj);
+                break;
+
+            // ── NUEVO: Confirmación positiva a QueryIf ──
+            case "QueryIfConfirm":
+                procesador.ProcesarQueryIfConfirm(msj);
+                break;
+
             // ── Fin de juego ──
             case "Request" when msj.content == "cancelar-contrato":
                 control.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);

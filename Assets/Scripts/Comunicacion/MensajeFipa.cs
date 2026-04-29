@@ -108,3 +108,32 @@ public struct ContenidoInformPosicion
     public Vector3 posicion;
     public bool llevaElCuadro;
 }
+
+// ── NUEVO ────────────────────────────────────────────────────────────────────
+
+// Contenido de un QueryIf: pregunta si el receptor fue el origen de un ruido
+// en una posición concreta. Se usa para descartar pasos de compañeros guardias.
+[Serializable]
+public struct ContenidoQueryIf
+{
+    // Posición estimada del ruido (con error de Oido)
+    public Vector3 posicionRuido;
+}
+
+// Contenido de la respuesta afirmativa a un QueryIf: el receptor confirma
+// que estaba en esa zona y era él quien generaba el ruido.
+[Serializable]
+public struct ContenidoQueryIfRespuesta
+{
+    // Posición real del guardia en el momento de responder
+    public Vector3 posicionReal;
+}
+
+// Contenido de un Inform especial que notifica que el cuadro ha desaparecido
+// de su posición base. Lo emite cualquier guardia que detecte la ausencia.
+[Serializable]
+public struct ContenidoInformCuadroRobado
+{
+    // Posición donde debería estar el cuadro (para referencia)
+    public Vector3 posicionBase;
+}

@@ -10,6 +10,9 @@ using UnityEngine.AI;
 //   - Procesar AcceptProposal: activar BloquearSalida y notificar a CapaComunicacion
 //   - Procesar Inform: actualizar el modelo de creencias
 //   - Procesar Cancel: liberar tareas y notificar a CapaComunicacion
+//   - Procesar QueryIf: responder si éramos el origen del ruido escuchado
+//   - Procesar QueryIfConfirm: recibir confirmación de que el ruido era un compañero
+//   - Procesar InformCuadroRobado: actualizar modelo cuando otro guardia avisa
 
 public class ProcesarComunicacion : MonoBehaviour
 {
@@ -18,11 +21,16 @@ public class ProcesarComunicacion : MonoBehaviour
     private NavMeshAgent      navAgent;
     private BloquearSalida    bloquearSalida;
     private GestorContractNet gestorCN;
-    private Mensajeria      comms;
+    private Mensajeria        comms;
     private CapaComunicacion  capaCom;
 
     // Conversación de bloqueo activa (para saber si un Cancel nos atañe)
     private string conversacionBloqueActiva;
+
+    // ── QueryIf: umbral de distancia para decidir si "éramos nosotros" el ruido
+    // Un guardia responde afirmativamente si está a menos de esta distancia
+    // de la posición del ruido reportada.
+    private const float UMBRAL_IDENTIFICACION_RUIDO = 3.5f;
 
     void Awake()
     {
@@ -161,6 +169,76 @@ public class ProcesarComunicacion : MonoBehaviour
             modelo.RegistrarVerLadron(info.posicion, info.llevaElCuadro);
             modelo.RegistrarPerderLadron();
         }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  PROCESAR INFORM CUADRO ROBADO (nuevo)
+    // ═══════════════════════════════════════════════════════
+
+    // Recibido cuando otro guardia detectó que el cuadro no está en su posición.
+    // Actualiza el modelo de creencias propio para que la planificación reaccione.
+    public void ProcesarInformCuadroRobado(MensajeFIPA msj)
+    {
+        Debug.Log($"<color=orange>[CUADRO]</color> {gameObject.name}: " +
+                  $"recibe aviso de cuadro robado de {msj.sender?.gameObject.name}");
+
+        modelo.RegistrarFaltaCuadro();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  PROCESAR QUERY-IF  (nuevo)
+    // ═══════════════════════════════════════════════════════
+
+    // Recibido cuando un compañero escuchó un ruido y quiere saber si éramos nosotros.
+    // Respondemos con QueryIfConfirm si estamos cerca de la posición indicada.
+    public void ProcesarQueryIf(MensajeFIPA msj)
+    {
+        if (msj.contenidoObjeto is not ContenidoQueryIf consulta) return;
+
+        float distancia = Vector3.Distance(transform.position, consulta.posicionRuido);
+
+        if (distancia <= UMBRAL_IDENTIFICACION_RUIDO)
+        {
+            // Sí éramos nosotros: respondemos afirmativamente
+            ContenidoQueryIfRespuesta respuesta = new ContenidoQueryIfRespuesta
+            {
+                posicionReal = transform.position
+            };
+
+            MensajeFIPA confirm = new MensajeFIPA(
+                "QueryIfConfirm",
+                comms,
+                $"(query-if-confirm (agente {gameObject.name}) " +
+                $"(posicion {transform.position.x:F1} {transform.position.y:F1} {transform.position.z:F1}))",
+                msj.conversationId,
+                "fipa-query");
+            confirm.contenidoObjeto = respuesta;
+            confirm.inReplyTo       = msj.replyWith;
+
+            comms.Enviar(msj.sender, confirm);
+
+            Debug.Log($"<color=green>[QUERY-IF]</color> {gameObject.name}: " +
+                      $"confirmo ser el origen del ruido (dist {distancia:F1}m) " +
+                      $"a {msj.sender?.gameObject.name}");
+        }
+        // Si no estamos cerca, simplemente no respondemos (silencio = no éramos nosotros)
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  PROCESAR QUERY-IF CONFIRM  (nuevo)
+    // ═══════════════════════════════════════════════════════
+
+    // Recibido cuando un compañero nos confirma que él era el origen del ruido.
+    // Delegamos en CapaComunicacion para que cancele la investigación si procede.
+    public void ProcesarQueryIfConfirm(MensajeFIPA msj)
+    {
+        if (msj.contenidoObjeto is not ContenidoQueryIfRespuesta respuesta) return;
+
+        Debug.Log($"<color=green>[QUERY-IF]</color> {gameObject.name}: " +
+                  $"{msj.sender?.gameObject.name} confirma que el ruido era suyo. " +
+                  $"Ignorando sonido [conv:{msj.conversationId}]");
+
+        capaCom?.NotificarRuidoEraCompañero(msj.conversationId);
     }
 
     // ═══════════════════════════════════════════════════════
