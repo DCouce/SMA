@@ -8,10 +8,10 @@ public class MensajeFIPA
     public string performativa;
 
     // Agente que envía el mensaje
-    public Comunicacion sender;
+    public Mensajeria sender;
 
     // Agentes receptores. Null o vacío = broadcast a todos los agentes.
-    public Comunicacion[] receiver;
+    public Mensajeria[] receiver;
 
     // Contenido semántico del mensaje en FIPA-SL (formato textual)
     public string content;
@@ -34,16 +34,16 @@ public class MensajeFIPA
     // Constructor con los campos mínimos necesarios
     public MensajeFIPA(
         string performativa,
-        Comunicacion sender,
+        Mensajeria sender,
         string content,
         string conversationId = null,
         string protocol = null)
     {
-        this.performativa = performativa;
-        this.sender = sender;
-        this.content = content;
+        this.performativa   = performativa;
+        this.sender         = sender;
+        this.content        = content;
         this.conversationId = conversationId ?? GenerarConversationId();
-        this.protocol = protocol;
+        this.protocol       = protocol;
     }
 
     private static int contadorConversacion = 0;
@@ -73,13 +73,15 @@ public class MensajeFIPA
     }
 }
 
-// Contenidos tipados que viajan en el campo contenidoObjeto
+// ═══════════════════════════════════════════════════════
+//  Contenidos tipados que viajan en contenidoObjeto
+// ═══════════════════════════════════════════════════════
 
-// Contenido de un CFP: el gestor anuncia los puntos de bloqueo a cubrir
+// Contenido de un CFP: UN solo punto de salida a cubrir (un CN por tarea)
 [Serializable]
 public struct ContenidoCFP
 {
-    public Transform[] puntosASalida;
+    public Vector3 puntoSalida;
     public string zonaNombre;
 }
 
@@ -106,4 +108,3 @@ public struct ContenidoInformPosicion
     public Vector3 posicion;
     public bool llevaElCuadro;
 }
-

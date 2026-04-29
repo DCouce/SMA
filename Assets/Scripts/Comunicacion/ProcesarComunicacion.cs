@@ -1,21 +1,28 @@
 using System;
 using UnityEngine;
-using System.Collections.Generic;
 using UnityEngine.AI;
-using System.ComponentModel;
-using System.Security.AccessControl;
-using System.Threading.Tasks;
+
+// Procesa los mensajes FIPA recibidos y ejecuta la lógica correspondiente.
+// Separado de Comunicacion (transporte) y de CapaComunicacion (capa paralela).
+//
+// Responsabilidades:
+//   - Procesar CFP: decidir si pujar, calcular coste, enviar Propose/Refuse
+//   - Procesar AcceptProposal: activar BloquearSalida y notificar a CapaComunicacion
+//   - Procesar Inform: actualizar el modelo de creencias
+//   - Procesar Cancel: liberar tareas y notificar a CapaComunicacion
 
 public class ProcesarComunicacion : MonoBehaviour
 {
-    private Modelado modelo;
-    private Control control;
-    private NavMeshAgent navAgent;
-    private BloquearSalida bloquearSalida;
+    private Modelado          modelo;
+    private Control           control;
+    private NavMeshAgent      navAgent;
+    private BloquearSalida    bloquearSalida;
     private GestorContractNet gestorCN;
-    private HistorialConversaciones historial;
+    private Mensajeria      comms;
+    private CapaComunicacion  capaCom;
+
+    // Conversación de bloqueo activa (para saber si un Cancel nos atañe)
     private string conversacionBloqueActiva;
-    private Comunicacion comms;
 
     void Awake()
     {
@@ -24,16 +31,14 @@ public class ProcesarComunicacion : MonoBehaviour
         navAgent       = GetComponent<NavMeshAgent>();
         bloquearSalida = GetComponent<BloquearSalida>();
         gestorCN       = GetComponent<GestorContractNet>();
-        historial      = GetComponent<HistorialConversaciones>();
-        comms          = GetComponent<Comunicacion>();
-
-
+        comms          = GetComponent<Mensajeria>();
+        capaCom        = GetComponent<CapaComunicacion>();
     }
 
-    // MANEJADORES DE PERFORMATIVAS
+    // ═══════════════════════════════════════════════════════
+    //  PROCESAR CFP (rol contratista)
+    // ═══════════════════════════════════════════════════════
 
-    // Recibe un CFP: decide si puede pujar y envía Propose o Refuse.
-    // No puja si ya está persiguiendo al ladrón.
     public void ProcesarCFP(MensajeFIPA cfp)
     {
         if (cfp.contenidoObjeto is not ContenidoCFP contenidoCFP)
@@ -42,24 +47,22 @@ public class ProcesarComunicacion : MonoBehaviour
             return;
         }
 
-        // Desempate determinista: dos agentes lanzaron subasta simultáneamente.
-        // El de nombre lexicográficamente mayor cede y participa como contratista.
-        if (gestorCN != null && gestorCN.SubastaActiva)
+        // Desempate determinista: si tenemos nuestra propia subasta activa
+        if (gestorCN != null && gestorCN.HaySubastasActivas)
         {
             int cmp = string.Compare(gameObject.name, cfp.sender.gameObject.name,
                                      StringComparison.Ordinal);
             if (cmp < 0)
             {
-                // Ganamos el desempate: nuestra subasta continúa, ignoramos este CFP.
+                // Ganamos el desempate: ignoramos este CFP
                 return;
             }
-            // Perdemos el desempate: abortamos nuestra subasta y pujamos en la del sender.
-            gestorCN.AbortarSubasta();
+            // Perdemos el desempate: abortamos nuestras subastas
+            gestorCN.AbortarSubastas();
         }
 
-        // Si ya hay una tarea de bloqueo de salida en ejecución, rechazamos
-        // Se consulta el historial para saberlo
-        if (historial != null && historial.EstaBloqueandoSalida())
+        // Si ya estamos bloqueando una salida, rechazamos
+        if (!string.IsNullOrEmpty(conversacionBloqueActiva))
         {
             MensajeFIPA refuse = new MensajeFIPA(
                 "Refuse",
@@ -72,7 +75,7 @@ public class ProcesarComunicacion : MonoBehaviour
             return;
         }
 
-        // Si estamos persiguiendo, nos negamos (Refuse)
+        // Si estamos persiguiendo, rechazamos
         if (modelo.ladronALaVista)
         {
             MensajeFIPA refuse = new MensajeFIPA(
@@ -86,33 +89,36 @@ public class ProcesarComunicacion : MonoBehaviour
             return;
         }
 
-        // Calculamos el coste para cada punto y enviamos un Propose por punto
-        foreach (Transform punto in contenidoCFP.puntosASalida)
+        // Calcular coste para el punto y enviar Propose
+        Vector3 punto = contenidoCFP.puntoSalida;
+        float coste = CalcularCosteNavMesh(punto);
+        if (coste >= float.MaxValue) return; // punto inalcanzable, no respondemos
+
+        ContenidoPropose oferta = new ContenidoPropose
         {
-            float coste = CalcularCosteNavMesh(punto.position);
-            if (coste >= float.MaxValue) continue; // punto inalcanzable
+            puntoDestino = punto,
+            costeNavMesh = coste
+        };
 
-            ContenidoPropose oferta = new ContenidoPropose
-            {
-                puntoDestino = punto.position,
-                costeNavMesh = coste
-            };
+        MensajeFIPA propose = new MensajeFIPA(
+            "Propose",
+            comms,
+            $"(propose (action {gameObject.name} (ir-a " +
+            $"(coord {punto.x:F1} {punto.y:F1} {punto.z:F1}))) " +
+            $"(= (coste-navegacion) {coste:F1}))",
+            cfp.conversationId,
+            cfp.protocol);
+        propose.contenidoObjeto = oferta;
+        propose.inReplyTo       = cfp.replyWith;
+        propose.replyWith       = $"propose-{gameObject.name}-{Time.frameCount}";
 
-            MensajeFIPA propose = new MensajeFIPA(
-                "Propose",
-                comms,
-                $"(propose (action {gameObject.name} (ir-a (coord {punto.position.x:F1} {punto.position.y:F1} {punto.position.z:F1}))) (= (coste-navegacion) {coste:F1}))",
-                cfp.conversationId,
-                cfp.protocol);
-            propose.contenidoObjeto = oferta;
-            propose.inReplyTo       = cfp.replyWith;
-            propose.replyWith       = $"propose-{gameObject.name}-{Time.frameCount}";
-
-            comms.Enviar(cfp.sender, propose);
-        }
+        comms.Enviar(cfp.sender, propose);
     }
 
-    // Recibe AcceptProposal: activa BloquearSalida hacia el punto asignado
+    // ═══════════════════════════════════════════════════════
+    //  PROCESAR ACCEPT-PROPOSAL (rol contratista)
+    // ═══════════════════════════════════════════════════════
+
     public void ProcesarAcceptProposal(MensajeFIPA msj)
     {
         if (msj.contenidoObjeto is not ContenidoTareaAsignada tarea)
@@ -120,51 +126,61 @@ public class ProcesarComunicacion : MonoBehaviour
             comms.EnviarNotUnderstood(msj);
             return;
         }
+
         conversacionBloqueActiva = msj.conversationId;
-        Debug.Log($"<color=cyan>[FIPA]</color> {gameObject.name}: tarea aceptada → {tarea.puntoDestino}");
 
+        Debug.Log($"<color=cyan>[FIPA]</color> {gameObject.name}: " +
+                  $"tarea aceptada → {tarea.puntoDestino} [conv:{msj.conversationId}]");
+
+        // Configurar BloquearSalida con los datos del gestor
         bloquearSalida.SetPunto(tarea.puntoDestino, msj.sender, msj.conversationId, tarea.zonaNombre);
-        control.RecibirPropuesta(Control.PRIORIDAD_SUBASTA, bloquearSalida);
 
-        // Confirmamos con Agree
+        // Notificar a la CapaComunicacion → que notifique a la CapaReactiva
+        capaCom?.NotificarTareaAsignada(tarea.puntoDestino, tarea.zonaNombre);
+
+        // Confirmar con Agree
         MensajeFIPA agree = new MensajeFIPA(
             "Agree",
             comms,
-            $"(agree (action {gameObject.name} (ir-a (coord {tarea.puntoDestino.x:F1} {tarea.puntoDestino.y:F1} {tarea.puntoDestino.z:F1}))) true)",
+            $"(agree (action {gameObject.name} (ir-a " +
+            $"(coord {tarea.puntoDestino.x:F1} {tarea.puntoDestino.y:F1} {tarea.puntoDestino.z:F1}))) true)",
             msj.conversationId,
             msj.protocol);
         agree.inReplyTo = msj.replyWith;
         comms.Enviar(msj.sender, agree);
     }
 
-    // Procesa un Inform genérico según su contenido semántico.
-    // Caso actual: posición del ladrón compartida entre guardias.
-    public async Task ProcesarInform(MensajeFIPA msj)
+    // ═══════════════════════════════════════════════════════
+    //  PROCESAR INFORM (posición del ladrón compartida)
+    // ═══════════════════════════════════════════════════════
+
+    public void ProcesarInform(MensajeFIPA msj)
     {
         if (msj.contenidoObjeto is ContenidoInformPosicion info)
         {
-            // Actualizamos creencias con la información recibida
-            modelo.RegistrarVerLadron(info.posicion, info.llevaElCuadro); 
-            modelo.RegistrarPerderLadron();                   
+            modelo.RegistrarVerLadron(info.posicion, info.llevaElCuadro);
+            modelo.RegistrarPerderLadron();
         }
     }
 
-    // Recibe un Cancel: si tenemos asignada esa conversación, abandonamos
-    // el bloqueo y respondemos con InformDone (cancelación confirmada).
+    // ═══════════════════════════════════════════════════════
+    //  PROCESAR CANCEL (el gestor cancela nuestro contrato)
+    // ═══════════════════════════════════════════════════════
+
     public void ProcesarCancel(MensajeFIPA cancel)
     {
         if (bloquearSalida == null) return;
-
-        // Solo nos atañe si la conversación cancelada es la nuestra activa
         if (bloquearSalida.ConversacionActual() != cancel.conversationId) return;
 
         Debug.Log($"<color=yellow>[CANCEL]</color> {gameObject.name} abandona bloqueo " +
-                $"conv:{cancel.conversationId}");
+                  $"conv:{cancel.conversationId}");
 
-        // Liberar el control: PRIORIDAD_SUBASTA queda libre y la planificación
-        // recolocará al guardia en patrulla automáticamente
-        control.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);
+        conversacionBloqueActiva = null;
 
+        // Notificar a la CapaComunicacion → que notifique a la CapaReactiva
+        capaCom?.NotificarTareaCancelada();
+
+        // Responder con InformDone
         MensajeFIPA informDone = new MensajeFIPA(
             "InformDone",
             comms,
@@ -175,6 +191,9 @@ public class ProcesarComunicacion : MonoBehaviour
         comms.Enviar(cancel.sender, informDone);
     }
 
+    // ═══════════════════════════════════════════════════════
+    //  UTILIDADES
+    // ═══════════════════════════════════════════════════════
 
     public float CalcularCosteNavMesh(Vector3 destino)
     {
@@ -187,5 +206,11 @@ public class ProcesarComunicacion : MonoBehaviour
             return d;
         }
         return float.MaxValue;
+    }
+
+    // Permite liberar la conversación de bloqueo desde fuera (ej: fin de juego)
+    public void LiberarBloqueoActivo()
+    {
+        conversacionBloqueActiva = null;
     }
 }

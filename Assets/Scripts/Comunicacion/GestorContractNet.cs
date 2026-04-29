@@ -5,161 +5,233 @@ using System.Linq;
 
 // Implementa el rol de GESTOR en el protocolo FIPA Contract Net.
 //
-// Flujo del protocolo:
-//   1. Gestor envía CFP a todos los agentes.
+// Los Contract Net se ejecutan de forma SECUENCIAL: se lanza el CFP
+// del primer punto, se espera a recoger propuestas, se asigna al ganador,
+// y SOLO ENTONCES se lanza el CFP del siguiente punto.
+// Esto garantiza que el segundo CN ya sabe qué agentes están ocupados.
+//
+// Flujo por tarea:
+//   1. Gestor envía CFP (una tarea, un punto) a todos los agentes.
 //   2. Contratistas responden con Propose o Refuse.
 //   3. Gestor evalúa propuestas y envía AcceptProposal al mejor
 //      y RejectProposal al resto.
-//   4. Contratista confirma con Agree y finaliza con InformDone o Failure.
-//
-// El gestor es el guardia que avista al ladrón (CapaReactiva lo activa).
+//   4. Se pasa al siguiente punto (si queda alguno).
+
 public class GestorContractNet : MonoBehaviour
 {
     [Tooltip("Tiempo de espera para recoger propuestas antes de evaluar (segundos).")]
     public float tiempoEsperaPropuestas = 0.3f;
 
-    private Comunicacion comms;
-    private HistorialConversaciones historial;
+    private Mensajeria comms;
 
-    // Estado de la subasta activa
-    private bool subastaActiva = false;
-    private string conversationIdActual;
+    // Subasta en curso (solo una a la vez)
+    private string convIdActual;
+    private List<MensajeFIPA> propuestasActuales = new List<MensajeFIPA>();
+    private bool subastaEnCurso = false;
 
-    public bool SubastaActiva => subastaActiva;
+    // Contratos ya asignados en esta ronda (para cancelar al cambiar de zona)
+    private readonly List<ContratoActivo> contratosActivos = new List<ContratoActivo>();
 
-    // Propuestas recibidas en la ronda actual: punto → lista de propuestas
-    private readonly Dictionary<Vector3, List<MensajeFIPA>> propuestasPorPunto
-        = new Dictionary<Vector3, List<MensajeFIPA>>();
+    // Agentes que ya ganaron un punto en esta ronda (no pueden ganar otro)
+    private readonly HashSet<Mensajeria> agentesAsignados = new HashSet<Mensajeria>();
 
-    // Puntos a cubrir en la ronda actual
-    private List<Vector3> puntosPendientes = new List<Vector3>();
-    private string zonaNombreActual;
+    public bool HaySubastasActivas => subastaEnCurso || contratosActivos.Count > 0;
+
+    private class ContratoActivo
+    {
+        public string conversationId;
+        public Mensajeria contratista;
+        public Vector3 punto;
+    }
 
     void Awake()
     {
-        comms     = GetComponent<Comunicacion>();
-        historial = GetComponent<HistorialConversaciones>();
+        comms = GetComponent<Mensajeria>();
     }
 
-    // API PÚBLICA (llamada desde CapaReactiva y ProcesarComunicacion)
+    // ═══════════════════════════════════════════════════════
+    //  API PÚBLICA
+    // ═══════════════════════════════════════════════════════
 
-    // Aborta la subasta en curso cuando perdemos el desempate con otro gestor simultáneo.
-    public void AbortarSubasta()
+    // Inicia una cadena secuencial de Contract Nets: uno por cada punto.
+    // Los puntos se procesan en orden, esperando a que cada uno termine
+    // antes de lanzar el siguiente.
+    public void IniciarContractNetsSecuenciales(List<Transform> puntos, string zonaNombre)
     {
-        StopAllCoroutines();
-        subastaActiva = false;
-        propuestasPorPunto.Clear();
-        puntosPendientes.Clear();
-        Debug.Log($"[{gameObject.name}] Subasta abortada por desempate (otro gestor tiene prioridad).");
-    }
-
-    // Inicia una nueva ronda Contract Net para cubrir los puntos de salida dados.
-    // Si ya hay una subasta activa, no lanza otra.
-    public void IniciarContractNet(List<Transform> puntos, string zonaNombre)
-    {
-        if (subastaActiva) return;
-        StartCoroutine(RondaContractNet(puntos, zonaNombre));
+        StartCoroutine(CadenaSecuencial(puntos, zonaNombre));
     }
 
     // Recibe un Propose de un contratista (llamado desde Comunicacion)
     public void RecibirPropuesta(MensajeFIPA propose)
     {
-        if (!subastaActiva) return;
-        if (propose.conversationId != conversationIdActual) return;
+        if (!subastaEnCurso) return;
+        if (propose.conversationId != convIdActual) return;
 
-        ContenidoPropose oferta = (ContenidoPropose)propose.contenidoObjeto;
-
-        if (!propuestasPorPunto.ContainsKey(oferta.puntoDestino))
-            propuestasPorPunto[oferta.puntoDestino] = new List<MensajeFIPA>();
-
-        propuestasPorPunto[oferta.puntoDestino].Add(propose);
+        propuestasActuales.Add(propose);
     }
 
     // Recibe un InformDone del contratista: tarea completada
     public void RecibirInformDone(MensajeFIPA informDone)
     {
-        // El historial ya actualiza el estado automáticamente al registrar InformDone
         Debug.Log($"<color=cyan>[CONTRACT NET]</color> {gameObject.name}: " +
                   $"{informDone.sender?.gameObject.name} completó su tarea. " +
                   $"[conv:{informDone.conversationId}]");
+
+        // Liberar el agente de la lista de asignados
+        ContratoActivo contrato = contratosActivos.Find(
+            c => c.conversationId == informDone.conversationId);
+        if (contrato != null)
+        {
+            agentesAsignados.Remove(contrato.contratista);
+            contratosActivos.Remove(contrato);
+        }
     }
 
-    // COROUTINE PRINCIPAL DEL PROTOCOLO
-
-    private IEnumerator RondaContractNet(List<Transform> puntos, string zonaNombre)
+    // Aborta todo (desempate con otro gestor)
+    public void AbortarSubastas()
     {
-        subastaActiva = true;
+        StopAllCoroutines();
+        subastaEnCurso = false;
+        propuestasActuales.Clear();
+        contratosActivos.Clear();
+        agentesAsignados.Clear();
+        Debug.Log($"[{gameObject.name}] Subastas abortadas por desempate.");
+    }
 
-        CancelarMisContratosActivos("cambio-de-zona");
-        propuestasPorPunto.Clear();
-        puntosPendientes     = puntos.Select(p => p.position).ToList();
-        conversationIdActual = MensajeFIPA.GenerarConversationId();
-        zonaNombreActual     = zonaNombre;
+    // Cancela todos los contratos activos (cambio de zona, fin de juego)
+    public void CancelarTodosLosContratos(string razon)
+    {
+        // Cancelar la cadena secuencial si está en curso
+        StopAllCoroutines();
+        subastaEnCurso = false;
+        propuestasActuales.Clear();
+
+        // Enviar Cancel a todos los contratistas con tarea asignada
+        foreach (ContratoActivo contrato in contratosActivos)
+        {
+            if (contrato.contratista != null)
+            {
+                MensajeFIPA cancel = new MensajeFIPA(
+                    "Cancel",
+                    comms,
+                    $"(cancel (conversation-id {contrato.conversationId}) (razon {razon}))",
+                    contrato.conversationId,
+                    "fipa-contract-net");
+
+                comms.Enviar(contrato.contratista, cancel);
+            }
+        }
+
+        contratosActivos.Clear();
+        agentesAsignados.Clear();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  CADENA SECUENCIAL: un CN tras otro
+    // ═══════════════════════════════════════════════════════
+
+    private IEnumerator CadenaSecuencial(List<Transform> puntos, string zonaNombre)
+    {
+        foreach (Transform punto in puntos)
+        {
+            yield return StartCoroutine(RondaContractNet(punto.position, zonaNombre));
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  COROUTINE: una ronda Contract Net para UN punto
+    // ═══════════════════════════════════════════════════════
+
+    private IEnumerator RondaContractNet(Vector3 punto, string zonaNombre)
+    {
+        subastaEnCurso = true;
+        propuestasActuales.Clear();
+        convIdActual = MensajeFIPA.GenerarConversationId();
 
         // PASO 1: enviar CFP
-        string replyWithCFP = $"cfp-{gameObject.name}-{Time.frameCount}";
-
-        ContenidoCFP contenidoCFP = new ContenidoCFP { 
-            puntosASalida = puntos.ToArray(),
-            zonaNombre = zonaNombre
+        ContenidoCFP contenidoCFP = new ContenidoCFP
+        {
+            puntoSalida = punto,
+            zonaNombre  = zonaNombre
         };
-
-        // Construimos el content en FIPA-SL
-        string puntosStr = string.Join(" ",
-            puntos.Select(p =>
-                $"(coord {p.position.x:F1} {p.position.y:F1} {p.position.z:F1})"));
 
         MensajeFIPA cfp = new MensajeFIPA(
             "CallForProposal",
             comms,
-            $"(action ?agente (bloquear-salida (set {puntosStr})))",
-            conversationIdActual,
+            $"(action ?agente (bloquear-salida " +
+            $"(coord {punto.x:F1} {punto.y:F1} {punto.z:F1})))",
+            convIdActual,
             "fipa-contract-net");
         cfp.contenidoObjeto = contenidoCFP;
-        cfp.replyWith       = replyWithCFP;
+        cfp.replyWith       = $"cfp-{gameObject.name}-{convIdActual}";
 
         comms.Difundir(cfp);
+
+        Debug.Log($"<color=cyan>[CONTRACT NET]</color> {gameObject.name} lanza CFP " +
+                  $"para punto {punto} [conv:{convIdActual}]");
 
         // PASO 2: esperar propuestas
         yield return new WaitForSeconds(tiempoEsperaPropuestas);
 
         // PASO 3: evaluar y asignar
-        foreach (Vector3 punto in puntosPendientes)
-            AsignarMejorOferta(punto);
+        AsignarMejorOferta(punto, zonaNombre);
 
-        subastaActiva = false;
+        subastaEnCurso = false;
     }
 
-    // Para el punto dado, elige la propuesta de menor coste,
-    // envía AcceptProposal al ganador y RejectProposal al resto.
-    private void AsignarMejorOferta(Vector3 punto)
+    // ═══════════════════════════════════════════════════════
+    //  EVALUACIÓN: elegir al mejor postor
+    // ═══════════════════════════════════════════════════════
+
+    private void AsignarMejorOferta(Vector3 punto, string zonaNombre)
     {
-        if (!propuestasPorPunto.TryGetValue(punto, out List<MensajeFIPA> propuestas)
-            || propuestas.Count == 0)
+        if (propuestasActuales.Count == 0)
         {
             Debug.LogWarning($"[CONTRACT NET] Sin propuestas para {punto}");
             return;
         }
 
-        // Ordenamos por coste NavMesh (menor = mejor)
-        propuestas.Sort((a, b) =>
+        // Filtrar agentes que ya están asignados a otro punto en esta ronda
+        List<MensajeFIPA> disponibles = propuestasActuales
+            .Where(p => !agentesAsignados.Contains(p.sender))
+            .ToList();
+
+        if (disponibles.Count == 0)
+        {
+            Debug.LogWarning($"[CONTRACT NET] Todos los postores ya están asignados " +
+                             $"para {punto}");
+            return;
+        }
+
+        // Ordenar por coste NavMesh (menor = mejor)
+        disponibles.Sort((a, b) =>
         {
             float ca = ((ContenidoPropose)a.contenidoObjeto).costeNavMesh;
             float cb = ((ContenidoPropose)b.contenidoObjeto).costeNavMesh;
             return ca.CompareTo(cb);
         });
 
-        MensajeFIPA ganadora     = propuestas[0];
-        ContenidoPropose oferta  = (ContenidoPropose)ganadora.contenidoObjeto;
+        MensajeFIPA ganadora    = disponibles[0];
+        ContenidoPropose oferta = (ContenidoPropose)ganadora.contenidoObjeto;
 
         Debug.Log($"<color=cyan>[CONTRACT NET]</color> {gameObject.name} asigna " +
                   $"{punto} → {ganadora.sender?.gameObject.name} " +
-                  $"(coste {oferta.costeNavMesh:F1}m)");
+                  $"(coste {oferta.costeNavMesh:F1}m) [conv:{convIdActual}]");
+
+        // Marcar como asignado
+        agentesAsignados.Add(ganadora.sender);
+        contratosActivos.Add(new ContratoActivo
+        {
+            conversationId = convIdActual,
+            contratista    = ganadora.sender,
+            punto          = punto
+        });
 
         // AcceptProposal al ganador
-        ContenidoTareaAsignada tarea = new ContenidoTareaAsignada { 
+        ContenidoTareaAsignada tarea = new ContenidoTareaAsignada
+        {
             puntoDestino = punto,
-            zonaNombre = zonaNombreActual
+            zonaNombre   = zonaNombre
         };
 
         MensajeFIPA accept = new MensajeFIPA(
@@ -167,7 +239,7 @@ public class GestorContractNet : MonoBehaviour
             comms,
             $"(accept-proposal (action {ganadora.sender?.gameObject.name} " +
             $"(ir-a (coord {punto.x:F1} {punto.y:F1} {punto.z:F1}))) true)",
-            conversationIdActual,
+            convIdActual,
             "fipa-contract-net");
         accept.contenidoObjeto = tarea;
         accept.inReplyTo       = ganadora.replyWith;
@@ -175,59 +247,20 @@ public class GestorContractNet : MonoBehaviour
         comms.Enviar(ganadora.sender, accept);
 
         // RejectProposal al resto
-        for (int i = 1; i < propuestas.Count; i++)
+        foreach (MensajeFIPA propuesta in propuestasActuales)
         {
-            MensajeFIPA perdedora = propuestas[i];
+            if (propuesta == ganadora) continue;
 
             MensajeFIPA reject = new MensajeFIPA(
                 "RejectProposal",
                 comms,
-                $"(reject-proposal (action {perdedora.sender?.gameObject.name} bloquear-salida) " +
+                $"(reject-proposal (action {propuesta.sender?.gameObject.name} bloquear-salida) " +
                 $"(mejor-oferta-seleccionada))",
-                conversationIdActual,
+                convIdActual,
                 "fipa-contract-net");
-            reject.inReplyTo = perdedora.replyWith;
+            reject.inReplyTo = propuesta.replyWith;
 
-            comms.Enviar(perdedora.sender, reject);
+            comms.Enviar(propuesta.sender, reject);
         }
-    }
-
-    private void CancelarMisContratosActivos(string razon)
-    {
-        if (historial == null) return;
-
-        foreach (Conversacion conv in historial.ConversacionesActivas())
-        {
-            if (conv.protocolo != "fipa-contract-net") continue;
-            if (conv.iniciadorNombre != gameObject.name) continue;
-
-            Comunicacion contratista = ContratistaDe(conv);
-            if (contratista == null) continue;
-
-            MensajeFIPA cancel = new MensajeFIPA(
-                "Cancel",
-                comms,
-                $"(cancel (conversation-id {conv.conversationId}) (razon {razon}))",
-                conv.conversationId,
-                "fipa-contract-net");
-
-            comms.Enviar(contratista, cancel);
-        }
-    }
-
-    // Recupera el contratista al que asignamos esa conversación buscando
-    // el AcceptProposal que enviamos en su historial.
-    private Comunicacion ContratistaDe(Conversacion conv)
-    {
-        foreach (EntradaHistorial e in conv.mensajes)
-        {
-            if (e.fueEmitido &&
-                e.mensaje.performativa == "AcceptProposal" &&
-                e.mensaje.receiver != null && e.mensaje.receiver.Length > 0)
-            {
-                return e.mensaje.receiver[0];
-            }
-        }
-        return null;
     }
 }

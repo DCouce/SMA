@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public class BloquearSalida : MonoBehaviour
 {
     private NavMeshAgent agent;
-    private Comunicacion comms;
+    private Mensajeria comms;
 
     private bool    enPosicion       = false;
     private bool    buscandoEnZona   = false;
@@ -13,7 +13,7 @@ public class BloquearSalida : MonoBehaviour
     private string  zonaNombre;
     private Zona    zonaCache;
 
-    private Comunicacion gestorActual;
+    private Mensajeria gestorActual;
     private string       convIdActual;
 
     private const float INTERVALO_BUSQUEDA = 4f;
@@ -22,10 +22,10 @@ public class BloquearSalida : MonoBehaviour
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        comms = GetComponent<Comunicacion>();
+        comms = GetComponent<Mensajeria>();
     }
 
-    public void SetPunto(Vector3 punto, Comunicacion gestor = null,
+    public void SetPunto(Vector3 punto, Mensajeria gestor = null,
                          string convId = null, string nombreZona = null)
     {
         puntoGuardia    = punto;

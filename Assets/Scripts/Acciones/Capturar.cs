@@ -18,9 +18,9 @@ public class Capturar : MonoBehaviour
 
         // Notificar a todos los guardias para que liberen sus asignaciones
         var msj = new MensajeFIPA("Request",
-        GetComponent<Comunicacion>(), "cancelar-contrato");
+        GetComponent<Mensajeria>(), "cancelar-contrato");
 
-        GetComponent<Comunicacion>().Difundir(msj);        
+        GetComponent<Mensajeria>().Difundir(msj);        
 
         Debug.Log("¡Capturado!");
     }

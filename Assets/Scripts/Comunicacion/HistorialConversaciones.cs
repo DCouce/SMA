@@ -2,136 +2,161 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Text;
 
-// Componente que gestiona el historial completo de conversaciones FIPA
-// del agente. Se añade al mismo GameObject que Comunicacion.
+// Historial de mensajes FIPA del agente, implementado como una cola (FIFO).
+// Registra todos los mensajes enviados y recibidos en orden cronológico.
+// No gestiona estados de conversación: es un log puro para consulta y depuración.
 //
-// Según SC00061G sección 2.5.2, el conversation-id permite a los agentes
-// razonar sobre sus conversaciones.
-//
-// Comunicacion llama a RegistrarEnviado/RegistrarRecibido en cada mensaje.
+// Se puede consultar desde el Inspector con [ContextMenu] o desde código.
+
 public class HistorialConversaciones : MonoBehaviour
 {
-    // Conversaciones indexadas por conversation-id
-    private readonly Dictionary<string, Conversacion> conversaciones
-        = new Dictionary<string, Conversacion>();
+    [Tooltip("Número máximo de mensajes en la cola. Los más antiguos se descartan.")]
+    public int capacidadMaxima = 200;
 
-    // REGISTRO DE MENSAJES
+    // Cola FIFO de entradas
+    private readonly Queue<EntradaMensaje> cola = new Queue<EntradaMensaje>();
 
-    // Registra un mensaje enviado por este agente
+    // ═══════════════════════════════════════════════════════
+    //  Entrada individual del historial
+    // ═══════════════════════════════════════════════════════
+
+    [System.Serializable]
+    public class EntradaMensaje
+    {
+        public string performativa;
+        public string sender;
+        public string receiver;
+        public string content;
+        public string conversationId;
+        public string protocol;
+        public float  timestamp;
+        public bool   fueEmitido;
+
+        public EntradaMensaje(MensajeFIPA msj, bool fueEmitido)
+        {
+            this.performativa   = msj.performativa;
+            this.sender         = msj.sender?.gameObject.name ?? "?";
+            this.receiver       = msj.receiver != null && msj.receiver.Length > 0
+                                    ? msj.receiver[0]?.gameObject.name ?? "?"
+                                    : "broadcast";
+            this.content        = msj.content;
+            this.conversationId = msj.conversationId;
+            this.protocol       = msj.protocol;
+            this.timestamp      = Time.time;
+            this.fueEmitido     = fueEmitido;
+        }
+
+        public override string ToString()
+        {
+            string dir = fueEmitido ? "→" : "←";
+            return $"[{timestamp:F1}s] {dir} {performativa} | " +
+                   $"{sender} → {receiver} | conv:{conversationId} | {content}";
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  REGISTRO
+    // ═══════════════════════════════════════════════════════
+
     public void RegistrarEnviado(MensajeFIPA msj)
     {
-        ObtenerOCrear(msj).RegistrarMensaje(msj, fueEmitido: true);
+        Encolar(new EntradaMensaje(msj, fueEmitido: true));
     }
 
-    // Registra un mensaje recibido por este agente
     public void RegistrarRecibido(MensajeFIPA msj)
     {
-        ObtenerOCrear(msj).RegistrarMensaje(msj, fueEmitido: false);
+        Encolar(new EntradaMensaje(msj, fueEmitido: false));
     }
 
-    // CONSULTAS Y RAZONAMIENTO SOBRE EL HISTORIAL
-
-    // Devuelve las conversaciones activas (Iniciada, EnNegociacion, EnEjecucion)
-    public List<Conversacion> ConversacionesActivas()
+    private void Encolar(EntradaMensaje entrada)
     {
-        List<Conversacion> resultado = new List<Conversacion>();
-        foreach (Conversacion conv in conversaciones.Values)
+        cola.Enqueue(entrada);
+
+        // Descartar los más antiguos si superamos la capacidad
+        while (cola.Count > capacidadMaxima)
+            cola.Dequeue();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  CONSULTAS
+    // ═══════════════════════════════════════════════════════
+
+    // Número total de mensajes en el historial
+    public int TotalMensajes => cola.Count;
+
+    // Devuelve todos los mensajes como array (orden cronológico)
+    public EntradaMensaje[] ObtenerTodos()
+    {
+        return cola.ToArray();
+    }
+
+    // Devuelve los últimos N mensajes
+    public List<EntradaMensaje> ObtenerUltimos(int n)
+    {
+        EntradaMensaje[] todos = cola.ToArray();
+        List<EntradaMensaje> resultado = new List<EntradaMensaje>();
+        int inicio = Mathf.Max(0, todos.Length - n);
+        for (int i = inicio; i < todos.Length; i++)
+            resultado.Add(todos[i]);
+        return resultado;
+    }
+
+    // Filtra mensajes por conversation-id
+    public List<EntradaMensaje> ObtenerPorConversacion(string conversationId)
+    {
+        List<EntradaMensaje> resultado = new List<EntradaMensaje>();
+        foreach (EntradaMensaje e in cola)
         {
-            if (conv.estado == EstadoConversacion.Iniciada      ||
-                conv.estado == EstadoConversacion.EnNegociacion ||
-                conv.estado == EstadoConversacion.EnEjecucion)
-            {
-                resultado.Add(conv);
-            }
+            if (e.conversationId == conversationId)
+                resultado.Add(e);
         }
         return resultado;
     }
 
-    public List<Conversacion> ConversacionesCompletadas() =>
-        FiltrarPorEstado(EstadoConversacion.Completada);
-
-    public List<Conversacion> ConversacionesFallidas() =>
-        FiltrarPorEstado(EstadoConversacion.Fallida);
-
-    // Indica si el agente ya está ejecutando una tarea de bloqueo de salida.
-    // Lo usa Comunicacion al recibir un CFP para decidir si pujar o rechazar.
-    public bool EstaBloqueandoSalida()
+    // Filtra mensajes por performativa
+    public List<EntradaMensaje> ObtenerPorPerformativa(string performativa)
     {
-        foreach (Conversacion conv in ConversacionesActivas())
+        List<EntradaMensaje> resultado = new List<EntradaMensaje>();
+        foreach (EntradaMensaje e in cola)
         {
-            if (conv.protocolo == "fipa-contract-net" &&
-                conv.estado == EstadoConversacion.EnEjecucion)
-                return true;
+            if (e.performativa == performativa)
+                resultado.Add(e);
         }
-        return false;
+        return resultado;
     }
 
-    // Número total de tareas completadas en esta sesión
-    public int TotalTareasCompletadas => ConversacionesCompletadas().Count;
+    // ═══════════════════════════════════════════════════════
+    //  LOGGING (accesible desde el Inspector)
+    // ═══════════════════════════════════════════════════════
 
-    // Proporción de conversaciones completadas frente al total terminadas.
-    // Devuelve 1.0 si aún no hay conversaciones terminadas.
-    public float TasaExito()
-    {
-        int completadas = ConversacionesCompletadas().Count;
-        int fallidas    = ConversacionesFallidas().Count;
-        int total       = completadas + fallidas;
-        return total == 0 ? 1f : (float)completadas / total;
-    }
-
-    // CANCELACIÓN
-
-    // Cancela todas las conversaciones activas (al terminar el juego)
-    public void CancelarTodasLasActivas()
-    {
-        foreach (Conversacion conv in ConversacionesActivas())
-            conv.estado = EstadoConversacion.Cancelada;
-    }
-
-    // LOGGING
-
-    // Imprime el resumen completo de todas las conversaciones del agente.
     [ContextMenu("Imprimir Historial Completo")]
     public void ImprimirHistorialCompleto()
     {
         StringBuilder sb = new StringBuilder();
         sb.AppendLine($"\n══════ HISTORIAL DE {gameObject.name} ══════");
-        sb.AppendLine($"Total conversaciones : {conversaciones.Count}");
-        sb.AppendLine($"Activas              : {ConversacionesActivas().Count}");
-        sb.AppendLine($"Completadas          : {TotalTareasCompletadas}");
-        sb.AppendLine($"Fallidas             : {ConversacionesFallidas().Count}");
-        sb.AppendLine($"Tasa de éxito        : {TasaExito():P0}");
+        sb.AppendLine($"Total mensajes: {cola.Count}");
         sb.AppendLine();
 
-        foreach (Conversacion conv in conversaciones.Values)
-            sb.AppendLine(conv.ResumenCompleto());
+        foreach (EntradaMensaje entrada in cola)
+            sb.AppendLine(entrada.ToString());
 
+        sb.AppendLine("══════════════════════════════════════");
         Debug.Log(sb.ToString());
     }
 
-    // HELPERS PRIVADOS
-
-    private Conversacion ObtenerOCrear(MensajeFIPA msj)
+    [ContextMenu("Imprimir Últimos 10")]
+    public void ImprimirUltimos10()
     {
-        string id = msj.conversationId ?? "sin-id";
-
-        if (!conversaciones.TryGetValue(id, out Conversacion conv))
-        {
-            conv = new Conversacion(
-                id,
-                msj.protocol ?? "desconocido",
-                msj.sender?.gameObject.name ?? "desconocido");
-
-            conversaciones[id] = conv;
-        }
-        return conv;
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine($"\n── Últimos 10 mensajes de {gameObject.name} ──");
+        foreach (EntradaMensaje entrada in ObtenerUltimos(10))
+            sb.AppendLine(entrada.ToString());
+        Debug.Log(sb.ToString());
     }
 
-    private List<Conversacion> FiltrarPorEstado(EstadoConversacion estado)
+    // Limpia todo el historial
+    public void Limpiar()
     {
-        List<Conversacion> resultado = new List<Conversacion>();
-        foreach (Conversacion conv in conversaciones.Values)
-            if (conv.estado == estado) resultado.Add(conv);
-        return resultado;
+        cola.Clear();
     }
 }

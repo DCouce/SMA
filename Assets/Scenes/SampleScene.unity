@@ -26387,6 +26387,7 @@ GameObject:
   - component: {fileID: 388811636}
   - component: {fileID: 388811635}
   - component: {fileID: 388811637}
+  - component: {fileID: 388811644}
   - component: {fileID: 388811625}
   - component: {fileID: 388811628}
   - component: {fileID: 388811632}
@@ -26847,6 +26848,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
+  capacidadMaxima: 200
 --- !u!114 &388811643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26859,6 +26861,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8402631979efa140a232d7be1e54ec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProcesarComunicacion
+--- !u!114 &388811644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388811619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccef473476c67944c854b66e4364ef5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CapaComunicacion
 --- !u!1001 &389225845
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -101879,6 +101893,7 @@ GameObject:
   - component: {fileID: 1512524474}
   - component: {fileID: 1512524475}
   - component: {fileID: 1512524473}
+  - component: {fileID: 1512524482}
   - component: {fileID: 1512524463}
   - component: {fileID: 1512524466}
   - component: {fileID: 1512524471}
@@ -102339,6 +102354,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
+  capacidadMaxima: 200
 --- !u!114 &1512524481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -102351,6 +102367,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8402631979efa140a232d7be1e54ec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProcesarComunicacion
+--- !u!114 &1512524482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512524457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccef473476c67944c854b66e4364ef5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CapaComunicacion
 --- !u!1001 &1517087518
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -106656,6 +106684,7 @@ GameObject:
   - component: {fileID: 1586003709}
   - component: {fileID: 1586003708}
   - component: {fileID: 1586003710}
+  - component: {fileID: 1586003717}
   - component: {fileID: 1586003698}
   - component: {fileID: 1586003701}
   - component: {fileID: 1586003706}
@@ -107116,6 +107145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
+  capacidadMaxima: 200
 --- !u!114 &1586003716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107128,6 +107158,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8402631979efa140a232d7be1e54ec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProcesarComunicacion
+--- !u!114 &1586003717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1586003692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccef473476c67944c854b66e4364ef5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CapaComunicacion
 --- !u!1001 &1587691277
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -124464,6 +124506,7 @@ GameObject:
   - component: {fileID: 1850501538}
   - component: {fileID: 1850501541}
   - component: {fileID: 1850501539}
+  - component: {fileID: 1850501548}
   - component: {fileID: 1850501527}
   - component: {fileID: 1850501530}
   - component: {fileID: 1850501535}
@@ -124924,6 +124967,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
+  capacidadMaxima: 200
 --- !u!114 &1850501547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124936,6 +124980,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8402631979efa140a232d7be1e54ec9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProcesarComunicacion
+--- !u!114 &1850501548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850501521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccef473476c67944c854b66e4364ef5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CapaComunicacion
 --- !u!1001 &1851899995
 PrefabInstance:
   m_ObjectHideFlags: 0
