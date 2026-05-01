@@ -1,7 +1,26 @@
 using UnityEngine;
 
+// Capa de Planificación con arquitectura de subsunción.
+//
+// Los comportamientos deliberativos se organizan en niveles de prioridad:
+//   Nivel 2 (máximo): Revisar   – vimos al ladrón hace poco, vamos a su última posición
+//   Nivel 1:          Investigar – hay un ruido sin investigar
+//   Nivel 0 (mínimo): Patrullar  – rutina por defecto
+//
+// Un nivel superior INHIBE a los inferiores.
+// Toda la capa opera a PRIORIDAD_PLANIFICACION = 1, por lo que la CapaReactiva
+// (prioridad 3) y el BloquearSalida por subasta (prioridad 2) siempre la subsumen.
+
 public class CapaPlanificacion : MonoBehaviour
 {
+    // ─── Niveles de subsunción internos ──────────────────
+    private const int NIVEL_REVISAR    = 2;
+    private const int NIVEL_INVESTIGAR = 1;
+    private const int NIVEL_PATRULLAR  = 0;
+
+    private int nivelActivo = -1;
+
+    // ─── Referencias ─────────────────────────────────────
     private Modelado           modelo;
     private Control            control;
     private Investigar         investigar;
@@ -24,35 +43,63 @@ public class CapaPlanificacion : MonoBehaviour
         EvaluarSituacion();
     }
 
-    private void EvaluarSituacion()
-    {
-        // La capa reactiva (perseguir/capturar) siempre tiene prioridad sobre todo esto.
-        // La subasta (PRIORIDAD_SUBASTA = 2) también: si BloquearSalida está activo,
-        // RecibirPropuesta(1, patrulla) no lo sobreescribe porque 1 < 2.
-        if (modelo.ladronALaVista) return;
-
-        // 1. SOSPECHA: vimos al ladrón hace poco y aún no revisamos esa posición
-        if (modelo.TiempoSinVerLadron < 5f && !modelo.posicionYaRevisada)
-        {
-            revisar.SetDestino(modelo.ultimaPosicionConocidaLadron);
-            control.RecibirPropuesta(Control.PRIORIDAD_PLANIFICACION, revisar);
-        }
-        // 2. RUIDO: hay un sonido pendiente de investigar
-        else if (modelo.hayRuidoSinInvestigar)
-        {
-            investigar.SetPuntoRuido(modelo.posicionEstimadaRuido);
-            control.RecibirPropuesta(Control.PRIORIDAD_PLANIFICACION, investigar);
-        }
-        // 3. RUTINA: patrulla por defecto
-        else
-        {
-            control.RecibirPropuesta(Control.PRIORIDAD_PLANIFICACION, patrulla);
-        }
-    }
-
     void OnDisable()
     {
         if (modelo)  modelo.OnMemoriaActualizada -= EvaluarSituacion;
         if (control) control.OnPrioridadLibre    -= EvaluarSituacion;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  SUBSUNCIÓN: activar un nivel solo si no hay uno superior activo
+    // ═══════════════════════════════════════════════════════
+
+    private void Activar(int nivel, MonoBehaviour comportamiento)
+    {
+        if (nivel == nivelActivo) return; // ya activo, no hacer nada
+
+        // Desactivar el nivel anterior si era distinto
+        if (nivelActivo >= 0)
+            DesactivarNivelActual();
+
+        nivelActivo = nivel;
+        control.RecibirPropuesta(Control.PRIORIDAD_PLANIFICACION, comportamiento);
+    }
+
+    private void DesactivarNivelActual()
+    {
+        // El Control ya se encarga de deshabilitar el MonoBehaviour anterior
+        // al recibir una nueva propuesta de igual o mayor prioridad.
+        nivelActivo = -1;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  EVALUACIÓN de la situación (re-evaluada en cada cambio de memoria)
+    // ═══════════════════════════════════════════════════════
+
+    private void EvaluarSituacion()
+    {
+        // La CapaReactiva (PRIORIDAD_REACTIVA = 3) y BloquearSalida por subasta
+        // (PRIORIDAD_SUBASTA = 2) siempre tienen prioridad sobre esta capa.
+        // Si el ladrón está a la vista, la reactiva ya está actuando: no interferir.
+        if (modelo.ladronALaVista) return;
+
+        // Nivel 2: REVISAR – vimos al ladrón hace menos de 5s y no hemos revisado
+        if (modelo.TiempoSinVerLadron < 5f && !modelo.posicionYaRevisada)
+        {
+            revisar.SetDestino(modelo.ultimaPosicionConocidaLadron);
+            Activar(NIVEL_REVISAR, revisar);
+            return;
+        }
+
+        // Nivel 1: INVESTIGAR – hay un ruido pendiente
+        if (modelo.hayRuidoSinInvestigar)
+        {
+            investigar.SetPuntoRuido(modelo.posicionEstimadaRuido);
+            Activar(NIVEL_INVESTIGAR, investigar);
+            return;
+        }
+
+        // Nivel 0: PATRULLAR – rutina por defecto
+        Activar(NIVEL_PATRULLAR, patrulla);
     }
 }

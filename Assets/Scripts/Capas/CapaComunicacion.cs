@@ -3,24 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 
 // Capa de Comunicación: funciona en PARALELO a Reactiva, Planificación y Modelado.
-// Se activa mediante eventos de los sensores y gestiona toda la comunicación FIPA:
-//   - Difunde Informs con la posición del ladrón (cooldown + distancia mínima).
-//   - Lanza Contract Nets individuales (uno por tarea/punto de salida).
+// Es la frontera entre el agente y la red FIPA. Gestiona:
+//   - Difunde Informs con la posición del ladrón al cambiar de zona.
+//   - Lanza Contract Nets secuenciales (uno por punto de salida).
 //   - Cancela contratos anteriores cuando la zona cambia.
 //   - Al escuchar un ruido, envía UN SOLO QueryIf y espera respuesta durante
-//     timeoutQueryIf segundos. Si nadie responde, el ruido se registra como
-//     sospechoso. Nuevos disparos del Oido durante ese tiempo se descartan
-//     para evitar inundar la red con QueryIfs redundantes.
-//   - Al detectar que el cuadro no está, difunde InformCuadroRobado para que
-//     todos los compañeros actualicen su modelo de creencias.
+//     timeoutQueryIf segundos. Si nadie responde, registra el ruido como sospechoso.
+//   - Al detectar que el cuadro no está, difunde InformCuadroRobado.
 //
-// Emite eventos que la CapaReactiva consume para decidir acciones.
+// Emite eventos que la CapaReactiva consume para acciones derivadas de la red:
+//   - OnTareaAsignada  → el guardia debe bloquear un punto (Contract Net ganado)
+//   - OnTareaCancelada → el gestor canceló el contrato
 
 public class CapaComunicacion : MonoBehaviour
 {
-    // Eventos que la CapaReactiva escucha
-    public event System.Action<Vector3, bool> OnLadronDetectado;
-    public event System.Action OnLadronPerdido;
+    // Eventos que la CapaReactiva escucha (solo tareas de red, no percepciones locales)
     public event System.Action<Vector3, string> OnTareaAsignada;
     public event System.Action OnTareaCancelada;
 
@@ -86,11 +83,12 @@ public class CapaComunicacion : MonoBehaviour
     }
 
     // ─── EVENTO: el sensor ve al ladrón ──────────────────────────────────────
+    // Solo gestiona la comunicación con la red (Inform + Contract Net).
+    // La CapaReactiva reacciona directamente al sensor para su propio comportamiento.
 
     private void AlVerLadron(Vector3 pos, bool llevaElCuadro)
     {
         ComprobarCambioDeZona(pos, llevaElCuadro);
-        OnLadronDetectado?.Invoke(pos, llevaElCuadro);
     }
 
     // ─── EVENTO: el sensor pierde al ladrón ──────────────────────────────────
@@ -99,7 +97,6 @@ public class CapaComunicacion : MonoBehaviour
     {
         convIdInformActual = null;
         ultimaZonaCFP      = null;
-        OnLadronPerdido?.Invoke();
     }
 
     // ─── EVENTO: el sensor detecta que el cuadro no está ─────────────────────
@@ -134,77 +131,52 @@ public class CapaComunicacion : MonoBehaviour
     //
     // LÓGICA DE FILTRADO (en orden):
     //   1. Si ya hay un QueryIf activo → descartar (el primero cubre este ruido).
-    //   2. Si el nuevo ruido está a menos de distanciaMinimaRuido del anterior
-    //      QueryIf → descartar (mismo evento sonoro, distinto fotograma).
-    //   3. En otro caso → lanzar un nuevo QueryIf y bloquear nuevos disparos
-    //      hasta que se resuelva.
+    //   2. Si el ruido está muy cerca del último QueryIf → descartar (mismo suceso).
+    //   3. En caso contrario → lanzar QueryIf y esperar timeout.
 
     private void AlEscucharRuido(Vector3 posicionRuido)
     {
-        // Filtro 1: ya hay un QueryIf en vuelo
-        if (queryIfActivo)
-        {
-            Debug.Log($"[{gameObject.name}] Ruido descartado: QueryIf ya en curso.");
-            return;
-        }
+        if (queryIfActivo) return;
 
-        // Filtro 2: mismo foco sonoro que el QueryIf anterior (pisadas continuas)
         float distancia = Vector3.Distance(posicionRuido, posicionUltimoQueryIf);
-        if (distancia < distanciaMinimaRuido)
-        {
-            Debug.Log($"[{gameObject.name}] Ruido descartado: demasiado cerca del anterior " +
-                      $"QueryIf ({distancia:F1}m < {distanciaMinimaRuido}m).");
-            return;
-        }
+        if (distancia < distanciaMinimaRuido) return;
 
-        // Lanzar QueryIf
-        StartCoroutine(QueryIfYActuar(posicionRuido));
+        posicionUltimoQueryIf = posicionRuido;
+        StartCoroutine(CicloQueryIf(posicionRuido));
     }
 
-    // ─── COROUTINE: un solo QueryIf por foco sonoro ───────────────────────────
-    //
-    // 1. Marca queryIfActivo = true (bloquea nuevos disparos).
-    // 2. Difunde el QueryIf con la posición del ruido.
-    // 3. Espera timeoutQueryIf segundos.
-    // 4. Si queryIfConfirmado → alguien respondió: ignorar.
-    //    Si no                → nadie respondió: registrar como ruido sospechoso.
-    // 5. Resetea el estado para permitir el siguiente QueryIf.
-
-    private IEnumerator QueryIfYActuar(Vector3 posicionRuido)
+    private IEnumerator CicloQueryIf(Vector3 posicionRuido)
     {
-        // Bloquear nuevos QueryIfs
-        queryIfActivo         = true;
-        queryIfConfirmado     = false;
-        queryIfConvId         = MensajeFIPA.GenerarConversationId();
-        posicionUltimoQueryIf = posicionRuido;
+        queryIfActivo     = false;
+        queryIfConfirmado = false;
+        queryIfConvId     = MensajeFIPA.GenerarConversationId();
+        queryIfActivo     = true;
 
-        // Construir y difundir QueryIf
-        ContenidoQueryIf consulta = new ContenidoQueryIf { posicionRuido = posicionRuido };
+        // Construir y difundir el QueryIf
+        ContenidoQueryIf contenido = new ContenidoQueryIf { posicionRuido = posicionRuido };
 
         MensajeFIPA queryIf = new MensajeFIPA(
             "QueryIf",
             comms,
-            $"(query-if (= (origen-ruido ?agente) " +
+            $"(query-if (agente-en-posicion " +
             $"(coord {posicionRuido.x:F1} {posicionRuido.y:F1} {posicionRuido.z:F1})))",
             queryIfConvId,
             "fipa-query");
-        queryIf.contenidoObjeto = consulta;
-        queryIf.replyWith       = $"queryif-{gameObject.name}-{queryIfConvId}";
+        queryIf.contenidoObjeto = contenido;
+
+        Debug.Log($"<color=yellow>[QUERY-IF]</color> {gameObject.name}: " +
+                  $"ruido en {posicionRuido}. Lanzando QueryIf [conv:{queryIfConvId}]");
 
         comms.Difundir(queryIf);
 
-        Debug.Log($"<color=yellow>[QUERY-IF]</color> {gameObject.name}: " +
-                  $"QueryIf enviado → ruido en {posicionRuido} " +
-                  $"(espera {timeoutQueryIf}s) [conv:{queryIfConvId}]");
-
-        // Esperar respuesta
+        // Esperar timeout
         yield return new WaitForSeconds(timeoutQueryIf);
 
-        // Evaluar resultado
         if (queryIfConfirmado)
         {
             Debug.Log($"<color=green>[QUERY-IF]</color> {gameObject.name}: " +
-                      $"ruido confirmado como compañero → ignorado. [conv:{queryIfConvId}]");
+                      $"ruido identificado como compañero. Ignorando. " +
+                      $"[conv:{queryIfConvId}]");
         }
         else
         {

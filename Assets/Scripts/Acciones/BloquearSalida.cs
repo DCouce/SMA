@@ -14,7 +14,7 @@ public class BloquearSalida : MonoBehaviour
     private Zona    zonaCache;
 
     private Mensajeria gestorActual;
-    private string       convIdActual;
+    private string     convIdActual;
 
     private const float INTERVALO_BUSQUEDA = 4f;
     public string ConversacionActual() => convIdActual;
@@ -25,21 +25,21 @@ public class BloquearSalida : MonoBehaviour
         comms = GetComponent<Mensajeria>();
     }
 
+    // Configura el punto de bloqueo y sus datos de contrato.
+    // El SetDestination lo hace OnEnable cuando Control active este componente,
+    // por lo que aquí solo almacenamos el estado.
     public void SetPunto(Vector3 punto, Mensajeria gestor = null,
                          string convId = null, string nombreZona = null)
     {
-        puntoGuardia    = punto;
-        gestorActual    = gestor;
-        convIdActual    = convId;
-        zonaNombre      = nombreZona;
-        zonaCache       = !string.IsNullOrEmpty(nombreZona)
-                            ? GestorZonas.Instance?.ObtenerZonaPorNombre(nombreZona)
-                            : null;
-        enPosicion      = false;
-        buscandoEnZona  = false;
-
-        if (this.enabled && agent != null && agent.isOnNavMesh)
-            agent.SetDestination(puntoGuardia);
+        puntoGuardia   = punto;
+        gestorActual   = gestor;
+        convIdActual   = convId;
+        zonaNombre     = nombreZona;
+        zonaCache      = !string.IsNullOrEmpty(nombreZona)
+                           ? GestorZonas.Instance?.ObtenerZonaPorNombre(nombreZona)
+                           : null;
+        enPosicion     = false;
+        buscandoEnZona = false;
     }
 
     void OnEnable()
@@ -71,8 +71,8 @@ public class BloquearSalida : MonoBehaviour
                 // Pasamos a buscar dentro de la zona si la conocemos
                 if (zonaCache != null)
                 {
-                    buscandoEnZona     = true;
-                    tSiguienteDestino  = Time.time + 0.5f;
+                    buscandoEnZona    = true;
+                    tSiguienteDestino = Time.time + 0.5f;
                 }
             }
             return;

@@ -106,8 +106,9 @@ public class GestorContractNet : MonoBehaviour
         subastaEnCurso = false;
         propuestasActuales.Clear();
 
+        List<ContratoActivo> copia = new List<ContratoActivo>(contratosActivos);
         // Enviar Cancel a todos los contratistas con tarea asignada
-        foreach (ContratoActivo contrato in contratosActivos)
+        foreach (ContratoActivo contrato in copia)
         {
             if (contrato.contratista != null)
             {

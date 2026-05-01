@@ -3,14 +3,16 @@ using UnityEngine;
 // Capa Reactiva con arquitectura de subsunción.
 //
 // Los comportamientos se organizan en niveles de prioridad:
-//   Nivel 3 (máximo): Capturar   – el ladrón está al alcance
-//   Nivel 2:          Perseguir  – el ladrón está a la vista
+//   Nivel 3 (máximo): Capturar       – el ladrón está al alcance
+//   Nivel 2:          Perseguir      – el ladrón está a la vista
 //   Nivel 1:          BloquearSalida – tarea asignada por Contract Net
 //   Nivel 0 (mínimo): (libre, la planificación decide)
 //
 // Un nivel superior INHIBE (subsume) a todos los inferiores.
-// La capa recibe señales de CapaComunicacion (que corre en paralelo)
-// y traduce esas señales en activaciones de comportamientos.
+//
+// Fuentes de entrada:
+//   - SensorVision directamente → reacción inmediata a lo que ve este guardia
+//   - CapaComunicacion          → tareas asignadas/canceladas por la red FIPA
 
 public class CapaReactiva : MonoBehaviour
 {
@@ -41,14 +43,14 @@ public class CapaReactiva : MonoBehaviour
 
     void OnEnable()
     {
-        // Escuchamos los eventos del sensor directamente (para reacción inmediata)
+        // Percepciones propias: reacción inmediata al sensor local
         if (sensor != null)
         {
             sensor.OnLadronVisto   += EvaluarLadronVisto;
             sensor.OnLadronPerdido += EvaluarLadronPerdido;
         }
 
-        // Escuchamos eventos de la capa de comunicación (tareas asignadas/canceladas)
+        // Tareas de red: asignadas/canceladas por Contract Net vía CapaComunicacion
         if (capaCom != null)
         {
             capaCom.OnTareaAsignada  += EvaluarTareaAsignada;
@@ -92,15 +94,7 @@ public class CapaReactiva : MonoBehaviour
     }
 
     // ═══════════════════════════════════════════════════════
-    //  NIVEL 3 – CAPTURAR (máxima prioridad)
-    // ═══════════════════════════════════════════════════════
-
-    // ═══════════════════════════════════════════════════════
-    //  NIVEL 2 – PERSEGUIR
-    // ═══════════════════════════════════════════════════════
-
-    // ═══════════════════════════════════════════════════════
-    //  EVALUACIÓN al ver/perder ladrón
+    //  EVALUACIÓN al ver/perder ladrón (Niveles 2 y 3)
     // ═══════════════════════════════════════════════════════
 
     private void EvaluarLadronVisto(Vector3 pos, bool robado)
@@ -121,21 +115,19 @@ public class CapaReactiva : MonoBehaviour
 
     private void EvaluarLadronPerdido()
     {
-        // Liberamos el nivel que teníamos (perseguir o capturar)
         if (nivelActivo == NIVEL_PERSEGUIR || nivelActivo == NIVEL_CAPTURAR)
-        {
             Liberar(nivelActivo);
-        }
     }
 
     // ═══════════════════════════════════════════════════════
     //  NIVEL 1 – BLOQUEAR SALIDA (asignada por Contract Net)
     // ═══════════════════════════════════════════════════════
+    // BloquearSalida ya fue configurado con todos sus datos (gestor, convId, zona)
+    // por ProcesarComunicacion.ProcesarAcceptProposal antes de llegar aquí.
+    // Solo hay que activarlo en el sistema de control.
 
     private void EvaluarTareaAsignada(Vector3 punto, string zona)
     {
-        // Solo se activa si no hay un nivel superior (persiguiendo/capturando)
-        bloquearSalida.SetPunto(punto, null, null, zona);
         Activar(NIVEL_BLOQUEAR, bloquearSalida);
     }
 
