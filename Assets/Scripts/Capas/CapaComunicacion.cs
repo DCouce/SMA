@@ -82,7 +82,7 @@ public class CapaComunicacion : MonoBehaviour
             modelo.OnRuidoPercibido -= AlEscucharRuido;
     }
 
-    // ─── EVENTO: el sensor ve al ladrón ──────────────────────────────────────
+    // EVENTO: el sensor ve al ladrón
     // Solo gestiona la comunicación con la red (Inform + Contract Net).
     // La CapaReactiva reacciona directamente al sensor para su propio comportamiento.
 
@@ -91,16 +91,14 @@ public class CapaComunicacion : MonoBehaviour
         ComprobarCambioDeZona(pos, llevaElCuadro);
     }
 
-    // ─── EVENTO: el sensor pierde al ladrón ──────────────────────────────────
-
+    // EVENTO: el sensor pierde al ladrón
     private void AlPerderLadron()
     {
         convIdInformActual = null;
         ultimaZonaCFP      = null;
     }
 
-    // ─── EVENTO: el sensor detecta que el cuadro no está ─────────────────────
-
+    // EVENTO: el sensor detecta que el cuadro no está
     private void AlDetectarCuadroRobado()
     {
         if (modelo.sabeRobado) return;
@@ -127,12 +125,11 @@ public class CapaComunicacion : MonoBehaviour
         modelo.RegistrarFaltaCuadro();
     }
 
-    // ─── EVENTO: el Modelado relanza un ruido percibido ──────────────────────
-    //
+    //  EVENTO: el Modelado relanza un ruido percibido
     // LÓGICA DE FILTRADO (en orden):
-    //   1. Si ya hay un QueryIf activo → descartar (el primero cubre este ruido).
-    //   2. Si el ruido está muy cerca del último QueryIf → descartar (mismo suceso).
-    //   3. En caso contrario → lanzar QueryIf y esperar timeout.
+    //   1. Si ya hay un QueryIf activo: descartar (el primero cubre este ruido).
+    //   2. Si el ruido está muy cerca del último QueryIf: descartar (mismo suceso).
+    //   3. En caso contrario: lanzar QueryIf y esperar timeout.
 
     private void AlEscucharRuido(Vector3 posicionRuido)
     {
@@ -191,8 +188,7 @@ public class CapaComunicacion : MonoBehaviour
         queryIfConvId = null;
     }
 
-    // ─── CAMBIO DE ZONA: Inform + Contract Net ────────────────────────────────
-
+    // CAMBIO DE ZONA: Inform + Contract Net
     private void ComprobarCambioDeZona(Vector3 pos, bool llevaElCuadro)
     {
         Zona zonaActual = GestorZonas.Instance?.ObtenerZona(pos);
@@ -237,7 +233,6 @@ public class CapaComunicacion : MonoBehaviour
         comms.Difundir(inform);
     }
 
-    // ─── API pública ──────────────────────────────────────────────────────────
 
     public void NotificarTareaAsignada(Vector3 punto, string zona)
         => OnTareaAsignada?.Invoke(punto, zona);

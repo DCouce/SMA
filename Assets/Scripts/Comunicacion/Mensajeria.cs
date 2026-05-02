@@ -2,15 +2,11 @@ using UnityEngine;
 using System.Collections.Generic;
 
 // Capa de transporte FIPA-ACL del agente guardia.
-// Gestiona el envío y recepción de mensajes conforme al estándar FIPA,
-// y los delega al componente apropiado según la performativa y el protocolo.
-//
-// Esta clase es SOLO transporte: no toma decisiones ni gestiona estado.
-// ProcesarComunicacion se encarga de interpretar los mensajes.
+// No toma ninguna decisión, solo mueve mensajes de un agente a otro y los redirige al componente correcto según la performativa.
 
 public class Mensajeria : MonoBehaviour
 {
-    // Red de agentes registrados
+    // Agentes registrados
     private static readonly List<Mensajeria> red = new List<Mensajeria>();
     public static IReadOnlyList<Mensajeria> Red => red;
 
@@ -32,10 +28,7 @@ public class Mensajeria : MonoBehaviour
 
     void OnDestroy() => red.Remove(this);
 
-    // ═══════════════════════════════════════════════════════
     //  ENVÍO
-    // ═══════════════════════════════════════════════════════
-
     // Envía un mensaje FIPA directamente a un receptor específico.
     public void Enviar(Mensajeria receptor, MensajeFIPA msj)
     {
@@ -61,10 +54,7 @@ public class Mensajeria : MonoBehaviour
         }
     }
 
-    // ═══════════════════════════════════════════════════════
     //  RECEPCIÓN
-    // ═══════════════════════════════════════════════════════
-
     // Punto de entrada de todos los mensajes FIPA recibidos.
     // Delega al componente apropiado según la performativa.
     public void Recibir(MensajeFIPA msj)
@@ -76,7 +66,7 @@ public class Mensajeria : MonoBehaviour
 
         switch (msj.performativa)
         {
-            // ── Contract Net: rol gestor ──
+            // Contract Net: rol gestor
             case "Propose":
                 gestorCN?.RecibirPropuesta(msj);
                 break;
@@ -85,7 +75,7 @@ public class Mensajeria : MonoBehaviour
                 gestorCN?.RecibirInformDone(msj);
                 break;
 
-            // ── Contract Net: rol contratista ──
+            // Contract Net: rol contratista
             case "CallForProposal":
                 procesador.ProcesarCFP(msj);
                 break;
@@ -98,37 +88,37 @@ public class Mensajeria : MonoBehaviour
                 Debug.Log($"[{gameObject.name}] Propuesta rechazada por {msj.sender?.gameObject.name}");
                 break;
 
-            // ── Inform genérico (posición del ladrón compartida) ──
+            // Inform genérico (posición del ladrón)
             case "Inform":
                 procesador.ProcesarInform(msj);
                 break;
 
-            // ── NUEVO: Inform cuadro robado ──
+            // Inform cuadro robado 
             case "InformCuadroRobado":
                 procesador.ProcesarInformCuadroRobado(msj);
                 break;
 
-            // ── NUEVO: QueryIf (¿eras tú el ruido?) ──
+            // QueryIf (para el ruido)
             case "QueryIf":
                 procesador.ProcesarQueryIf(msj);
                 break;
 
-            // ── NUEVO: Confirmación positiva a QueryIf ──
+            // Confirmación positiva a QueryIf
             case "QueryIfConfirm":
                 procesador.ProcesarQueryIfConfirm(msj);
                 break;
 
-            // ── Fin de juego ──
+            // Fin de juego
             case "Request" when msj.content == "cancelar-contrato":
                 control.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);
                 break;
 
-            // ── Cancel de contrato ──
+            // Cancelar contrato
             case "Cancel":
                 procesador.ProcesarCancel(msj);
                 break;
 
-            // ── Confirmaciones ──
+            // Confirmaciones
             case "Agree":
                 Debug.Log($"[{gameObject.name}] Agree recibido de {msj.sender?.gameObject.name}");
                 break;
@@ -146,7 +136,7 @@ public class Mensajeria : MonoBehaviour
                                  $"{msj.sender?.gameObject.name}: {msj.content}");
                 break;
 
-            // ── Performativa no reconocida ──
+            // Performativa no reconocida
             default:
                 EnviarNotUnderstood(msj);
                 break;

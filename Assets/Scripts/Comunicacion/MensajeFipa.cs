@@ -13,16 +13,16 @@ public class MensajeFIPA
     // Agentes receptores. Null o vacío = broadcast a todos los agentes.
     public Mensajeria[] receiver;
 
-    // Contenido semántico del mensaje en FIPA-SL (formato textual)
+    // Contenido del mensaje en FIPA-SL (en texto)
     public string content;
 
     // Objeto C# que representa el contenido tipado (posición, oferta, etc.)
     public object contenidoObjeto;
 
-    // Protocolo de interacción seguido (p.ej. "fipa-contract-net", "fipa-request")
+    // Protocolo de interacción ("fipa-contract-net" / "fipa-request"...)
     public string protocol;
 
-    // Identificador único de la conversación
+    // ID de la conversación
     public string conversationId;
 
     // Etiqueta de este mensaje (el receptor la usa en inReplyTo para responder)
@@ -73,9 +73,7 @@ public class MensajeFIPA
     }
 }
 
-// ═══════════════════════════════════════════════════════
-//  Contenidos tipados que viajan en contenidoObjeto
-// ═══════════════════════════════════════════════════════
+//  Contenidos tipados que van en contenidoObjeto
 
 // Contenido de un CFP: UN solo punto de salida a cubrir (un CN por tarea)
 [Serializable]
@@ -89,8 +87,8 @@ public struct ContenidoCFP
 [Serializable]
 public struct ContenidoPropose
 {
-    public Vector3 puntoDestino;
-    public float costeNavMesh;
+    public Vector3 puntoDestino; // Punto por el que puja
+    public float costeNavMesh; // Distancia real por NavMesh
 }
 
 // Contenido de un AcceptProposal: tarea concreta asignada al ganador
@@ -109,10 +107,8 @@ public struct ContenidoInformPosicion
     public bool llevaElCuadro;
 }
 
-// ── NUEVO ────────────────────────────────────────────────────────────────────
 
-// Contenido de un QueryIf: pregunta si el receptor fue el origen de un ruido
-// en una posición concreta. Se usa para descartar pasos de compañeros guardias.
+// Contenido de un QueryIf: pregunta si el receptor fue el origen de un ruido en una posición.
 [Serializable]
 public struct ContenidoQueryIf
 {
@@ -134,6 +130,6 @@ public struct ContenidoQueryIfRespuesta
 [Serializable]
 public struct ContenidoInformCuadroRobado
 {
-    // Posición donde debería estar el cuadro (para referencia)
+    // Posición donde debería estar el cuadro
     public Vector3 posicionBase;
 }

@@ -43,10 +43,7 @@ public class ProcesarComunicacion : MonoBehaviour
         capaCom        = GetComponent<CapaComunicacion>();
     }
 
-    // ═══════════════════════════════════════════════════════
     //  PROCESAR CFP (rol contratista)
-    // ═══════════════════════════════════════════════════════
-
     public void ProcesarCFP(MensajeFIPA cfp)
     {
         if (cfp.contenidoObjeto is not ContenidoCFP contenidoCFP)
@@ -123,10 +120,7 @@ public class ProcesarComunicacion : MonoBehaviour
         comms.Enviar(cfp.sender, propose);
     }
 
-    // ═══════════════════════════════════════════════════════
     //  PROCESAR ACCEPT-PROPOSAL (rol contratista)
-    // ═══════════════════════════════════════════════════════
-
     public void ProcesarAcceptProposal(MensajeFIPA msj)
     {
         if (msj.contenidoObjeto is not ContenidoTareaAsignada tarea)
@@ -158,10 +152,7 @@ public class ProcesarComunicacion : MonoBehaviour
         comms.Enviar(msj.sender, agree);
     }
 
-    // ═══════════════════════════════════════════════════════
     //  PROCESAR INFORM (posición del ladrón compartida)
-    // ═══════════════════════════════════════════════════════
-
     public void ProcesarInform(MensajeFIPA msj)
     {
         if (msj.contenidoObjeto is ContenidoInformPosicion info)
@@ -171,10 +162,7 @@ public class ProcesarComunicacion : MonoBehaviour
         }
     }
 
-    // ═══════════════════════════════════════════════════════
-    //  PROCESAR INFORM CUADRO ROBADO (nuevo)
-    // ═══════════════════════════════════════════════════════
-
+    //  PROCESAR INFORM CUADRO ROBADO
     // Recibido cuando otro guardia detectó que el cuadro no está en su posición.
     // Actualiza el modelo de creencias propio para que la planificación reaccione.
     public void ProcesarInformCuadroRobado(MensajeFIPA msj)
@@ -185,10 +173,7 @@ public class ProcesarComunicacion : MonoBehaviour
         modelo.RegistrarFaltaCuadro();
     }
 
-    // ═══════════════════════════════════════════════════════
-    //  PROCESAR QUERY-IF  (nuevo)
-    // ═══════════════════════════════════════════════════════
-
+    //  PROCESAR QUERY-IF
     // Recibido cuando un compañero escuchó un ruido y quiere saber si éramos nosotros.
     // Respondemos con QueryIfConfirm si estamos cerca de la posición indicada.
     public void ProcesarQueryIf(MensajeFIPA msj)
@@ -221,13 +206,10 @@ public class ProcesarComunicacion : MonoBehaviour
                       $"confirmo ser el origen del ruido (dist {distancia:F1}m) " +
                       $"a {msj.sender?.gameObject.name}");
         }
-        // Si no estamos cerca, simplemente no respondemos (silencio = no éramos nosotros)
+        // Si no estamos cerca, no respondemos (silencio = no éramos nosotros)
     }
 
-    // ═══════════════════════════════════════════════════════
-    //  PROCESAR QUERY-IF CONFIRM  (nuevo)
-    // ═══════════════════════════════════════════════════════
-
+    //  PROCESAR QUERY-IF CONFIRM
     // Recibido cuando un compañero nos confirma que él era el origen del ruido.
     // Delegamos en CapaComunicacion para que cancele la investigación si procede.
     public void ProcesarQueryIfConfirm(MensajeFIPA msj)
@@ -241,10 +223,7 @@ public class ProcesarComunicacion : MonoBehaviour
         capaCom?.NotificarRuidoEraCompañero(msj.conversationId);
     }
 
-    // ═══════════════════════════════════════════════════════
     //  PROCESAR CANCEL (el gestor cancela nuestro contrato)
-    // ═══════════════════════════════════════════════════════
-
     public void ProcesarCancel(MensajeFIPA cancel)
     {
         if (bloquearSalida == null) return;
@@ -255,7 +234,7 @@ public class ProcesarComunicacion : MonoBehaviour
 
         conversacionBloqueActiva = null;
 
-        // Notificar a la CapaComunicacion → que notifique a la CapaReactiva
+        // Notificar a la CapaComunicacion: que notifique a la CapaReactiva
         capaCom?.NotificarTareaCancelada();
 
         // Responder con InformDone
@@ -269,10 +248,8 @@ public class ProcesarComunicacion : MonoBehaviour
         comms.Enviar(cancel.sender, informDone);
     }
 
-    // ═══════════════════════════════════════════════════════
-    //  UTILIDADES
-    // ═══════════════════════════════════════════════════════
 
+    //  UTILS
     public float CalcularCosteNavMesh(Vector3 destino)
     {
         NavMeshPath path = new NavMeshPath();

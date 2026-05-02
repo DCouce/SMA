@@ -49,9 +49,6 @@ public class GestorContractNet : MonoBehaviour
         comms = GetComponent<Mensajeria>();
     }
 
-    // ═══════════════════════════════════════════════════════
-    //  API PÚBLICA
-    // ═══════════════════════════════════════════════════════
 
     // Inicia una cadena secuencial de Contract Nets: uno por cada punto.
     // Los puntos se procesan en orden, esperando a que cada uno termine
@@ -127,10 +124,7 @@ public class GestorContractNet : MonoBehaviour
         agentesAsignados.Clear();
     }
 
-    // ═══════════════════════════════════════════════════════
     //  CADENA SECUENCIAL: un CN tras otro
-    // ═══════════════════════════════════════════════════════
-
     private IEnumerator CadenaSecuencial(List<Transform> puntos, string zonaNombre)
     {
         foreach (Transform punto in puntos)
@@ -180,10 +174,7 @@ public class GestorContractNet : MonoBehaviour
         subastaEnCurso = false;
     }
 
-    // ═══════════════════════════════════════════════════════
     //  EVALUACIÓN: elegir al mejor postor
-    // ═══════════════════════════════════════════════════════
-
     private void AsignarMejorOferta(Vector3 punto, string zonaNombre)
     {
         if (propuestasActuales.Count == 0)
