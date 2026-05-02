@@ -49,16 +49,16 @@ public class CapaPlanificacion : MonoBehaviour
         if (control) control.OnPrioridadLibre    -= EvaluarSituacion;
     }
 
-    // ═══════════════════════════════════════════════════════
     //  SUBSUNCIÓN: activar un nivel solo si no hay uno superior activo
-    // ═══════════════════════════════════════════════════════
 
     private void Activar(int nivel, MonoBehaviour comportamiento)
     {
-        if (nivel == nivelActivo) return; // ya activo, no hacer nada
+        // Si ya es el nivel activo Y el comportamiento está corriendo, nada que hacer.
+        // Sin el segundo check, una propuesta rechazada por prioridad superior deja
+        // nivelActivo marcado pero el comportamiento sin habilitar, bloqueando el reintento.
+        if (nivel == nivelActivo && comportamiento.enabled) return;
 
-        // Desactivar el nivel anterior si era distinto
-        if (nivelActivo >= 0)
+        if (nivel != nivelActivo && nivelActivo >= 0)
             DesactivarNivelActual();
 
         nivelActivo = nivel;
