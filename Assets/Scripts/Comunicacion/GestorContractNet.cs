@@ -160,11 +160,10 @@ public class GestorContractNet : MonoBehaviour
         cfp.contenidoObjeto = contenidoCFP;
         cfp.replyWith       = $"cfp-{gameObject.name}-{convIdActual}";
 
-        comms.Difundir(cfp);
-
         Debug.Log($"<color=cyan>[CONTRACT NET]</color> {gameObject.name} lanza CFP " +
                   $"para punto {punto} [conv:{convIdActual}]");
 
+        comms.Difundir(cfp);
         // PASO 2: esperar propuestas
         yield return new WaitForSeconds(tiempoEsperaPropuestas);
 
