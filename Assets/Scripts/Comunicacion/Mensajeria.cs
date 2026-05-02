@@ -77,11 +77,11 @@ public class Mensajeria : MonoBehaviour
 
             // Contract Net: rol contratista
             case "CallForProposal":
-                procesador.ProcesarCFP(msj);
+                procesador?.ProcesarCFP(msj);
                 break;
 
             case "AcceptProposal":
-                procesador.ProcesarAcceptProposal(msj);
+                procesador?.ProcesarAcceptProposal(msj);
                 break;
 
             case "RejectProposal":
@@ -90,22 +90,22 @@ public class Mensajeria : MonoBehaviour
 
             // Inform genérico (posición del ladrón)
             case "Inform":
-                procesador.ProcesarInform(msj);
+                procesador?.ProcesarInform(msj);
                 break;
 
-            // Inform cuadro robado 
+            // Inform cuadro robado
             case "InformCuadroRobado":
-                procesador.ProcesarInformCuadroRobado(msj);
+                procesador?.ProcesarInformCuadroRobado(msj);
                 break;
 
             // QueryIf (para el ruido)
             case "QueryIf":
-                procesador.ProcesarQueryIf(msj);
+                procesador?.ProcesarQueryIf(msj);
                 break;
 
             // Confirmación positiva a QueryIf
             case "QueryIfConfirm":
-                procesador.ProcesarQueryIfConfirm(msj);
+                procesador?.ProcesarQueryIfConfirm(msj);
                 break;
 
             // Fin de juego
@@ -115,7 +115,7 @@ public class Mensajeria : MonoBehaviour
 
             // Cancelar contrato
             case "Cancel":
-                procesador.ProcesarCancel(msj);
+                procesador?.ProcesarCancel(msj);
                 break;
 
             // Confirmaciones
