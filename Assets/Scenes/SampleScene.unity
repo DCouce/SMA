@@ -20564,6 +20564,7 @@ GameObject:
   - component: {fileID: 305942274}
   - component: {fileID: 305942267}
   - component: {fileID: 305942266}
+  - component: {fileID: 305942277}
   m_Layer: 0
   m_Name: Guardia7 (Dron)
   m_TagString: Untagged
@@ -20711,6 +20712,19 @@ MonoBehaviour:
   alturaVuelo: 1
   tiempoSuavizado: 0.5
   velocidadMax: 4
+--- !u!114 &305942277
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 305942265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66e004011e46b024a847201f94faf3c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HistorialConversaciones
+  capacidadMaxima: 200
 --- !u!1001 &306050497
 PrefabInstance:
   m_ObjectHideFlags: 0

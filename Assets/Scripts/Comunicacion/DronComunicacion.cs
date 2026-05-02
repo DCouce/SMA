@@ -12,7 +12,7 @@ using System.Collections.Generic;
 //   - Si el ladrón no cambió de zona, no hace nada (evita spam de CNs).
 //
 // Componentes necesarios en el mismo GameObject:
-//   DroeVision, GestorContractNet, Mensajeria.
+//   DronVision, GestorContractNet, Mensajeria.
 // No necesita CapaReactiva, CapaPlanificacion ni ProcesarComunicacion.
 
 public class DronComunicacion : MonoBehaviour
@@ -40,9 +40,14 @@ public class DronComunicacion : MonoBehaviour
         if (Time.time < proximoChequeo) return;
         proximoChequeo = Time.time + intervaloChequeo;
 
-        if (!vision.LadronVisible) return;
+        if (vision.LadronVisible)
+            ComprobarCambioDeZona(vision.PosicionLadron, vision.LadronRobo);
+    }
 
-        Zona zonaActual = GestorZonas.Instance?.ObtenerZona(vision.PosicionLadron);
+    // CAMBIO DE ZONA: Inform + Contract Net
+    private void ComprobarCambioDeZona(Vector3 pos, bool llevaElCuadro)
+    {
+        Zona zonaActual = GestorZonas.Instance?.ObtenerZona(pos);
         if (zonaActual == null || zonaActual.puntosEntrada.Length == 0) return;
         if (zonaActual == ultimaZonaContratada) return;
 
@@ -56,19 +61,17 @@ public class DronComunicacion : MonoBehaviour
             new List<Transform>(zonaActual.puntosEntrada),
             zonaActual.nombreZona);
 
-        DifundirPosicion(zonaActual.nombreZona);
+        DifundirPosicion(pos, llevaElCuadro, zonaActual.nombreZona);
     }
 
-    private void DifundirPosicion(string zonaNombre)
+    private void DifundirPosicion(Vector3 pos, bool llevaElCuadro, string zonaNombre)
     {
         if (comms == null) return;
-
-        Vector3 pos = vision.PosicionLadron;
 
         ContenidoInformPosicion contenido = new ContenidoInformPosicion
         {
             posicion      = pos,
-            llevaElCuadro = vision.LadronRobo
+            llevaElCuadro = llevaElCuadro
         };
 
         MensajeFIPA inform = new MensajeFIPA(
@@ -77,7 +80,7 @@ public class DronComunicacion : MonoBehaviour
             $"(posicion-ladron (= (ubicacion ladron) " +
             $"(coord {pos.x:F1} {pos.y:F1} {pos.z:F1})) " +
             $"(zona {zonaNombre}) " +
-            $"(lleva-cuadro {vision.LadronRobo.ToString().ToLower()}))",
+            $"(lleva-cuadro {llevaElCuadro.ToString().ToLower()}))",
             MensajeFIPA.GenerarConversationId(),
             "fipa-inform");
         inform.contenidoObjeto = contenido;
