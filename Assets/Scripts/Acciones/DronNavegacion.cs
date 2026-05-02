@@ -26,6 +26,9 @@ public class DronNavegacion : MonoBehaviour
             velocidadMax
         );
         
-        transform.LookAt(objetivo.position);
+        Vector3 dir = objetivo.position - transform.position;
+        dir.y = 0;
+        if (dir != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(dir);
     }
 }
