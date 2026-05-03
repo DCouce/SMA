@@ -5,15 +5,15 @@ using System.Globalization;
 [Serializable]
 public class MensajeFIPA
 {
-    public string      performativa;
+    public string performativa;
     public Mensajeria  sender;
     public Mensajeria[] receiver;
-    public string      content;
-    public string      ontology;
-    public string      protocol;
-    public string      conversationId;
-    public string      replyWith;
-    public string      inReplyTo;
+    public string content;
+    public string ontology;
+    public string protocol;
+    public string conversationId;
+    public string replyWith;
+    public string inReplyTo;
 
     public MensajeFIPA(
         string performativa,
@@ -22,11 +22,11 @@ public class MensajeFIPA
         string conversationId = null,
         string protocol = null)
     {
-        this.performativa   = performativa;
-        this.sender         = sender;
-        this.content        = content;
+        this.performativa = performativa;
+        this.sender = sender;
+        this.content = content;
         this.conversationId = conversationId ?? GenerarConversationId();
-        this.protocol       = protocol;
+        this.protocol = protocol;
     }
 
     private static int contadorConversacion = 0;
@@ -123,6 +123,6 @@ public class MensajeFIPA
 // Tipos de tarea Contract Net
 public static class TipoTarea
 {
-    public const string Bloquear   = "bloquear";
+    public const string Bloquear = "bloquear";
     public const string Investigar = "investigar";
 }

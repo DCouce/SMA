@@ -4,13 +4,13 @@ using UnityEngine.AI;
 
 public class ProcesarComunicacion : MonoBehaviour
 {
-    private Modelado          modelo;
-    private Control           control;
-    private NavMeshAgent      navAgent;
-    private BloquearSalida    bloquearSalida;
-    private Investigar        investigar;
+    private Modelado modelo;
+    private Control control;
+    private NavMeshAgent navAgent;
+    private BloquearSalida bloquearSalida;
+    private Investigar investigar;
     private GestorContractNet gestorCN;
-    private Mensajeria        comms;
+    private Mensajeria comms;
     private CapaComunicacion  capaCom;
 
     private string conversacionBloqueActiva;
@@ -19,14 +19,14 @@ public class ProcesarComunicacion : MonoBehaviour
 
     void Awake()
     {
-        modelo         = GetComponent<Modelado>();
-        control        = GetComponent<Control>();
-        navAgent       = GetComponent<NavMeshAgent>();
+        modelo = GetComponent<Modelado>();
+        control = GetComponent<Control>();
+        navAgent = GetComponent<NavMeshAgent>();
         bloquearSalida = GetComponent<BloquearSalida>();
-        investigar     = GetComponent<Investigar>();
-        gestorCN       = GetComponent<GestorContractNet>();
-        comms          = GetComponent<Mensajeria>();
-        capaCom        = GetComponent<CapaComunicacion>();
+        investigar = GetComponent<Investigar>();
+        gestorCN = GetComponent<GestorContractNet>();
+        comms = GetComponent<Mensajeria>();
+        capaCom = GetComponent<CapaComunicacion>();
     }
 
     public void ProcesarCFP(MensajeFIPA cfp)
@@ -155,7 +155,7 @@ public class ProcesarComunicacion : MonoBehaviour
 
     public void ProcesarCancel(MensajeFIPA cancel)
     {
-        bool afectaBloqueo    = bloquearSalida != null &&
+        bool afectaBloqueo = bloquearSalida != null &&
                                 bloquearSalida.ConversacionActual() == cancel.conversationId;
         bool afectaInvestigar = conversacionBloqueActiva == cancel.conversationId;
 

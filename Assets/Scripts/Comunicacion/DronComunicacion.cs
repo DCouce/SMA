@@ -7,15 +7,15 @@ public class DronComunicacion : MonoBehaviour
     [Tooltip("Segundos entre cada comprobación de zona.")]
     public float intervaloChequeo = 10f;
 
-    private DronVision        vision;
+    private DronVision vision;
     private GestorContractNet gestor;
-    private Mensajeria        comms;
+    private Mensajeria comms;
 
     private Zona  ultimaZonaContratada;
     private float proximoChequeo;
 
     // Red ocupada: inferido por observación de CFPs ajenos
-    private bool  redOcupada        = false;
+    private bool  redOcupada = false;
     private float tRedOcupadaExpira = 0f;
     private const float TIMEOUT_RED = 25f;
 
@@ -23,7 +23,7 @@ public class DronComunicacion : MonoBehaviour
     {
         vision = GetComponent<DronVision>();
         gestor = GetComponent<GestorContractNet>();
-        comms  = GetComponent<Mensajeria>();
+        comms = GetComponent<Mensajeria>();
     }
 
     void OnEnable()
@@ -49,7 +49,7 @@ public class DronComunicacion : MonoBehaviour
 
     private void MarcarRedOcupada(Mensajeria emisor)
     {
-        redOcupada        = true;
+        redOcupada = true;
         tRedOcupadaExpira = Time.time + TIMEOUT_RED;
     }
 
@@ -61,7 +61,7 @@ public class DronComunicacion : MonoBehaviour
         if (redOcupada && Time.time < tRedOcupadaExpira) return;
         if (GestorContractNet.ZonaGestionadaActualmente == zonaActual &&
             Time.time < GestorContractNet.tZonaGestionadaExpira) return;
-        redOcupada           = false;
+        redOcupada = false;
         ultimaZonaContratada = zonaActual;
 
         Debug.Log($"<color=cyan>[DRON]</color> Ladrón en nueva zona: {zonaActual.nombreZona}. " +
@@ -73,7 +73,7 @@ public class DronComunicacion : MonoBehaviour
         List<GestorContractNet.EntradaTarea> tareas = new List<GestorContractNet.EntradaTarea>();
         tareas.Add(new GestorContractNet.EntradaTarea
         {
-            punto     = pos,
+            punto = pos,
             tipoTarea = TipoTarea.Investigar
         });
 
@@ -82,7 +82,7 @@ public class DronComunicacion : MonoBehaviour
         {
             tareas.Add(new GestorContractNet.EntradaTarea
             {
-                punto     = punto.position,
+                punto = punto.position,
                 tipoTarea = TipoTarea.Bloquear
             });
         }

@@ -8,9 +8,9 @@ public class DronVision : MonoBehaviour
     [Header("Visión aérea")]
     public float rangoVision = 5f;
 
-    public bool    LadronVisible  { get; private set; }
+    public bool LadronVisible { get; private set; }
     public Vector3 PosicionLadron { get; private set; }
-    public bool    LadronRobo     { get; private set; }
+    public bool LadronRobo { get; private set; }
 
     private PlayerController player;
 
@@ -30,7 +30,7 @@ public class DronVision : MonoBehaviour
         if (LadronVisible)
         {
             PosicionLadron = objetivo.position;
-            LadronRobo     = player != null && player.robado;
+            LadronRobo = player != null && player.robado;
         }
     }
 }

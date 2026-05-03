@@ -9,7 +9,7 @@ public class HistorialConversaciones : MonoBehaviour
 
     private readonly Queue<string> cola = new Queue<string>();
 
-    public void RegistrarEnviado(MensajeFIPA msj)  => Encolar(Formatear(msj, "→"));
+    public void RegistrarEnviado(MensajeFIPA msj) => Encolar(Formatear(msj, "→"));
     public void RegistrarRecibido(MensajeFIPA msj) => Encolar(Formatear(msj, "←"));
 
     private string Formatear(MensajeFIPA msj, string dir)

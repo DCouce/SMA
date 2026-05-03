@@ -15,10 +15,10 @@ public class Mensajeria : MonoBehaviour
 
     void Awake()
     {
-        gestorCN   = GetComponent<GestorContractNet>();
+        gestorCN = GetComponent<GestorContractNet>();
         procesador = GetComponent<ProcesarComunicacion>();
-        historial  = GetComponent<HistorialConversaciones>();
-        control    = GetComponent<Control>();
+        historial = GetComponent<HistorialConversaciones>();
+        control = GetComponent<Control>();
 
         red.Add(this);
     }
