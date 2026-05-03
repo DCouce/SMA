@@ -67,16 +67,20 @@ public class GestorContractNet : MonoBehaviour
         propuestasActuales.Add(propose);
     }
 
-    // Recibe un InformDone del contratista: tarea completada
+    // Recibe un InformDone del contratista: tarea completada o cancelación confirmada
     public void RecibirInformDone(MensajeFIPA informDone)
     {
         Debug.Log($"<color=cyan>[CONTRACT NET]</color> {gameObject.name}: " +
                   $"{informDone.sender?.gameObject.name} completó su tarea. " +
                   $"[conv:{informDone.conversationId}]");
 
-        // Liberar el agente de la lista de asignados
+        LiberarContrato(informDone.conversationId, informDone.sender);
+    }
+
+    private void LiberarContrato(string conversationId, Mensajeria contratista)
+    {
         ContratoActivo contrato = contratosActivos.Find(
-            c => c.conversationId == informDone.conversationId);
+            c => c.conversationId == conversationId);
         if (contrato != null)
         {
             agentesAsignados.Remove(contrato.contratista);
@@ -84,14 +88,10 @@ public class GestorContractNet : MonoBehaviour
         }
     }
 
-    // Aborta todo (desempate con otro gestor)
+    // Aborta todo (desempate con otro gestor): cancela contratos activos y detiene la cadena
     public void AbortarSubastas()
     {
-        StopAllCoroutines();
-        subastaEnCurso = false;
-        propuestasActuales.Clear();
-        contratosActivos.Clear();
-        agentesAsignados.Clear();
+        CancelarTodosLosContratos("desempate");
         Debug.Log($"[{gameObject.name}] Subastas abortadas por desempate.");
     }
 
@@ -114,7 +114,7 @@ public class GestorContractNet : MonoBehaviour
                     comms,
                     $"(razon {razon})",
                     contrato.conversationId,
-                    "fipa-contract-net");
+                    "fipa-cancel-meta-protocol");
 
                 comms.Enviar(contrato.contratista, cancel);
             }

@@ -113,8 +113,9 @@ public class Mensajeria : MonoBehaviour
                 procesador?.ProcesarQueryIf(msj);
                 break;
 
-            // Fin de juego
+            // Fin de juego: cancelar contratos activos como gestor y liberar rol contratista
             case "request" when msj.content == "cancelar-contrato":
+                gestorCN?.CancelarTodosLosContratos("juego-terminado");
                 control.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);
                 break;
 

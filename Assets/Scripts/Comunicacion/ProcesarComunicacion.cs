@@ -247,13 +247,13 @@ public class ProcesarComunicacion : MonoBehaviour
         // Notificar a la CapaComunicacion: que notifique a la CapaReactiva
         capaCom?.NotificarTareaCancelada();
 
-        // Responder con InformDone
+        // Responder con inform-done: cancelación exitosa
         MensajeFIPA informDone = new MensajeFIPA(
             "inform-done",
             comms,
             "(cancel-confirmado)",
             cancel.conversationId,
-            "fipa-contract-net");
+            "fipa-cancel-meta-protocol");
         informDone.inReplyTo = cancel.replyWith;
         comms.Enviar(cancel.sender, informDone);
     }
