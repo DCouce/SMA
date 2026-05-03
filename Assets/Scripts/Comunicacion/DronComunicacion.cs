@@ -68,7 +68,8 @@ public class DronComunicacion : MonoBehaviour
         if (zonaActual == null || zonaActual.puntosEntrada.Length == 0) return;
         if (zonaActual == ultimaZonaContratada) return;
         if (redOcupada && Time.time < tRedOcupadaExpira) return;
-
+        if (GestorContractNet.ZonaGestionadaActualmente == zonaActual &&
+            Time.time < GestorContractNet.tZonaGestionadaExpira) return;
         redOcupada           = false;
         ultimaZonaContratada = zonaActual;
 

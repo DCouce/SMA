@@ -169,7 +169,7 @@ public class CapaComunicacion : MonoBehaviour
         {
             Debug.Log($"<color=red>[QUERY-IF]</color> {gameObject.name}: " +
                       $"sin respuesta → ruido sospechoso. [conv:{queryIfConvId}]");
-            modelo.RegistrarRuido(posicionRuido);
+            ComprobarCambioDeZona(posicionRuido, modelo.sabeRobado);
         }
 
         queryIfActivo = false;
@@ -182,7 +182,8 @@ public class CapaComunicacion : MonoBehaviour
         if (zonaActual == null || zonaActual.puntosEntrada.Length == 0) return;
         if (zonaActual == ultimaZonaCFP) return;
         if (redOcupada && Time.time < tRedOcupadaExpira) return;
-
+        if (GestorContractNet.ZonaGestionadaActualmente == zonaActual &&
+            Time.time < GestorContractNet.tZonaGestionadaExpira) return;
         redOcupada    = false;
         ultimaZonaCFP = zonaActual;
         EnviarInformCambioZona(pos, llevaElCuadro, zonaActual.nombreZona);

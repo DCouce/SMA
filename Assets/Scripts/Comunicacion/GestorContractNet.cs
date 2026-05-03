@@ -16,6 +16,9 @@ public class GestorContractNet : MonoBehaviour
 
     private readonly List<ContratoActivo> contratosActivos = new List<ContratoActivo>();
     private readonly HashSet<Mensajeria>  agentesAsignados = new HashSet<Mensajeria>();
+    public static Zona  ZonaGestionadaActualmente { get; private set; } = null;
+    public static float tZonaGestionadaExpira     = 0f;
+    private const float TIMEOUT_ZONA_GESTIONADA   = 25f;
 
     public bool HaySubastasActivas => subastaEnCurso || contratosActivos.Count > 0;
 
@@ -71,6 +74,8 @@ public class GestorContractNet : MonoBehaviour
 
     public void CancelarTodosLosContratos(string razon)
     {
+        ZonaGestionadaActualmente = null;
+        tZonaGestionadaExpira = 0f;
         StopAllCoroutines();
         subastaEnCurso = false;
         propuestasActuales.Clear();
@@ -99,6 +104,8 @@ public class GestorContractNet : MonoBehaviour
 
     private IEnumerator RondaContractNet(Vector3 punto, string tipoTarea, string zonaNombre)
     {
+        ZonaGestionadaActualmente = GestorZonas.Instance?.ObtenerZonaPorNombre(zonaNombre);
+        tZonaGestionadaExpira = Time.time + TIMEOUT_ZONA_GESTIONADA;
         subastaEnCurso = true;
         propuestasActuales.Clear();
         convIdActual = MensajeFIPA.GenerarConversationId();
