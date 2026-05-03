@@ -36,9 +36,11 @@ public class HistorialConversaciones : MonoBehaviour
         {
             this.performativa   = msj.performativa;
             this.sender         = msj.sender?.gameObject.name ?? "?";
-            this.receiver       = msj.receiver != null && msj.receiver.Length > 0
-                                    ? msj.receiver[0]?.gameObject.name ?? "?"
-                                    : "broadcast";
+            this.receiver       = msj.receiver == null || msj.receiver.Length == 0
+                                    ? "broadcast"
+                                    : msj.receiver.Length == 1
+                                        ? msj.receiver[0]?.gameObject.name ?? "?"
+                                        : "broadcast";
             this.content        = msj.content;
             this.conversationId = msj.conversationId;
             this.protocol       = msj.protocol;
