@@ -3,17 +3,12 @@ using System.Collections.Generic;
 
 // Agente coordinador aéreo (rol exclusivo de GESTOR en Contract Net).
 //
-// Comportamiento:
-//   - Cada `intervaloChequeo` segundos consulta DronVision directamente.
-//   - Si el ladrón es visible Y está en una zona distinta a la del último CN lanzado:
-//       1. Cancela los contratos anteriores.
-//       2. Lanza un CN secuencial para bloquear las salidas de la nueva zona.
-//       3. Difunde un Inform con la posición para actualizar a todos los guardias.
-//   - Si el ladrón no cambió de zona, no hace nada (evita spam de CNs).
+// Al detectar al ladrón en una zona nueva lanza una cadena CN secuencial con DOS tipos de tarea:
+//   [0] Investigar – el guardia más cercano entra a la zona a buscar al ladrón.
+//   [1..N] Bloquear – un guardia distinto cubre cada punto de entrada/salida.
 //
-// Componentes necesarios en el mismo GameObject:
-//   DronVision, GestorContractNet, Mensajeria.
-// No necesita CapaReactiva, CapaPlanificacion ni ProcesarComunicacion.
+// La secuencialidad del CN y el filtro agentesAsignados garantizan que el guardia
+// que investiga el interior NO pueda también bloquear una salida en la misma ronda.
 
 public class DronComunicacion : MonoBehaviour
 {
@@ -21,7 +16,7 @@ public class DronComunicacion : MonoBehaviour
     [Tooltip("Segundos entre cada comprobación de zona.")]
     public float intervaloChequeo = 10f;
 
-    private DronVision       vision;
+    private DronVision        vision;
     private GestorContractNet gestor;
     private Mensajeria        comms;
 
@@ -44,7 +39,6 @@ public class DronComunicacion : MonoBehaviour
             ComprobarCambioDeZona(vision.PosicionLadron, vision.LadronRobo);
     }
 
-    // CAMBIO DE ZONA: Inform + Contract Net
     private void ComprobarCambioDeZona(Vector3 pos, bool llevaElCuadro)
     {
         Zona zonaActual = GestorZonas.Instance?.ObtenerZona(pos);
@@ -54,12 +48,31 @@ public class DronComunicacion : MonoBehaviour
         ultimaZonaContratada = zonaActual;
 
         Debug.Log($"<color=cyan>[DRON]</color> Ladrón en nueva zona: {zonaActual.nombreZona}. " +
-                  $"Lanzando Contract Net.");
+                  $"Lanzando CN: 1 investigar + {zonaActual.puntosEntrada.Length} bloquear.");
 
         gestor.CancelarTodosLosContratos("dron-zona-cambiada");
-        gestor.IniciarContractNetsSecuenciales(
-            new List<Transform>(zonaActual.puntosEntrada),
-            zonaActual.nombreZona);
+
+        // Construir cadena de tareas:
+        //   Primero: INVESTIGAR en la posición actual del ladrón (interior de la zona).
+        //   Luego:   BLOQUEAR cada punto de entrada/salida de la zona.
+        List<GestorContractNet.EntradaTarea> tareas = new List<GestorContractNet.EntradaTarea>();
+
+        tareas.Add(new GestorContractNet.EntradaTarea
+        {
+            punto     = pos,
+            tipoTarea = TipoTarea.Investigar
+        });
+
+        foreach (Transform punto in zonaActual.puntosEntrada)
+        {
+            tareas.Add(new GestorContractNet.EntradaTarea
+            {
+                punto     = punto.position,
+                tipoTarea = TipoTarea.Bloquear
+            });
+        }
+
+        gestor.IniciarContractNetsConTareas(tareas, zonaActual.nombreZona);
 
         DifundirPosicion(pos, llevaElCuadro, zonaActual.nombreZona);
     }
@@ -75,8 +88,7 @@ public class DronComunicacion : MonoBehaviour
         };
 
         MensajeFIPA inform = new MensajeFIPA(
-            "inform",
-            comms,
+            "inform", comms,
             $"(ubicacion ladron (coord {pos.x:F1} {pos.y:F1} {pos.z:F1})) " +
             $"(zona {zonaNombre}) " +
             $"(lleva-cuadro {llevaElCuadro.ToString().ToLower()})",

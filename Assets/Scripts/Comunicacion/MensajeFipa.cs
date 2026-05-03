@@ -4,37 +4,16 @@ using System;
 [Serializable]
 public class MensajeFIPA
 {
-    // Performativa del mensaje (tipo de acto comunicativo)
-    public string performativa;
-
-    // Agente que envía el mensaje
-    public Mensajeria sender;
-
-    // Agentes receptores. Null o vacío = broadcast a todos los agentes.
+    public string      performativa;
+    public Mensajeria  sender;
     public Mensajeria[] receiver;
+    public string      content;
+    public object      contenidoObjeto;
+    public string      protocol;
+    public string      conversationId;
+    public string      replyWith;
+    public string      inReplyTo;
 
-    // Contenido del mensaje en FIPA-SL (en texto)
-    public string content;
-
-    // Objeto C# que representa el contenido tipado (posición, oferta, etc.)
-    public object contenidoObjeto;
-
-    // Protocolo de interacción ("fipa-contract-net" / "fipa-request"...)
-    public string protocol;
-
-    // ID de la conversación
-    public string conversationId;
-
-    // Etiqueta de este mensaje (el receptor la usa en inReplyTo para responder)
-    public string replyWith;
-
-    // Etiqueta del mensaje al que este es respuesta
-    public string inReplyTo;
-
-    // Ontología que define el vocabulario del :content (distingue tipos de inform)
-    public string ontology;
-
-    // Constructor con los campos mínimos necesarios
     public MensajeFIPA(
         string performativa,
         Mensajeria sender,
@@ -51,13 +30,9 @@ public class MensajeFIPA
 
     private static int contadorConversacion = 0;
 
-    // Genera un conversation-id único para esta sesión
     public static string GenerarConversationId()
-    {
-        return $"conv-{++contadorConversacion}-{Time.frameCount}";
-    }
+        => $"conv-{++contadorConversacion}-{Time.frameCount}";
 
-    // Representación al estilo FIPA-ACL para logging
     public override string ToString()
     {
         string recv = receiver != null && receiver.Length > 0
@@ -68,72 +43,65 @@ public class MensajeFIPA
                $"  :sender {sender?.gameObject.name ?? "?"}\n" +
                $"  :receiver (set {recv})\n" +
                $"  :content // {content} //\n" +
-               (ontology       != null ? $"  :ontology {ontology}\n"             : "") +
-               (protocol       != null ? $"  :protocol {protocol}\n"             : "") +
+               (protocol       != null ? $"  :protocol {protocol}\n"              : "") +
                (conversationId != null ? $"  :conversation-id {conversationId}\n" : "") +
-               (replyWith      != null ? $"  :reply-with {replyWith}\n"          : "") +
-               (inReplyTo      != null ? $"  :in-reply-to {inReplyTo}\n"         : "") +
+               (replyWith      != null ? $"  :reply-with {replyWith}\n"           : "") +
+               (inReplyTo      != null ? $"  :in-reply-to {inReplyTo}\n"          : "") +
                ")";
     }
 }
 
-//  Contenidos tipados que van en contenidoObjeto
+// Tipos de tarea Contract Net
+public static class TipoTarea
+{
+    public const string Bloquear   = "bloquear";
+    public const string Investigar = "investigar";
+}
 
-// Contenido de un CFP: UN solo punto de salida a cubrir (un CN por tarea)
 [Serializable]
 public struct ContenidoCFP
 {
     public Vector3 puntoSalida;
-    public string zonaNombre;
+    public string  zonaNombre;
+    public string  tipoTarea;
 }
 
-// Contenido de un Propose: oferta de un agente contratista
 [Serializable]
 public struct ContenidoPropose
 {
-    public Vector3 puntoDestino; // Punto por el que puja
-    public float costeNavMesh; // Distancia real por NavMesh
+    public Vector3 puntoDestino;
+    public float   costeNavMesh;
 }
 
-// Contenido de un AcceptProposal: tarea concreta asignada al ganador
 [Serializable]
 public struct ContenidoTareaAsignada
 {
     public Vector3 puntoDestino;
-    public string zonaNombre;
+    public string  zonaNombre;
+    public string  tipoTarea;
 }
 
-// Contenido de un Inform para compartir la posición del ladrón
 [Serializable]
 public struct ContenidoInformPosicion
 {
     public Vector3 posicion;
-    public bool llevaElCuadro;
+    public bool    llevaElCuadro;
 }
 
-
-// Contenido de un QueryIf: pregunta si el receptor fue el origen de un ruido en una posición.
 [Serializable]
 public struct ContenidoQueryIf
 {
-    // Posición estimada del ruido (con error de Oido)
     public Vector3 posicionRuido;
 }
 
-// Contenido de la respuesta afirmativa a un QueryIf: el receptor confirma
-// que estaba en esa zona y era él quien generaba el ruido.
 [Serializable]
 public struct ContenidoQueryIfRespuesta
 {
-    // Posición real del guardia en el momento de responder
     public Vector3 posicionReal;
 }
 
-// Contenido de un Inform especial que notifica que el cuadro ha desaparecido
-// de su posición base. Lo emite cualquier guardia que detecte la ausencia.
 [Serializable]
 public struct ContenidoInformCuadroRobado
 {
-    // Posición donde debería estar el cuadro
     public Vector3 posicionBase;
 }
