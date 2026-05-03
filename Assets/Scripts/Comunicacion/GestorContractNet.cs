@@ -10,29 +10,29 @@ public class GestorContractNet : MonoBehaviour
 
     private Mensajeria comms;
 
-    private string            convIdActual;
+    private string convIdActual;
     private List<MensajeFIPA> propuestasActuales = new List<MensajeFIPA>();
-    private bool              subastaEnCurso     = false;
+    private bool subastaEnCurso = false;
 
     private readonly List<ContratoActivo> contratosActivos = new List<ContratoActivo>();
     private readonly HashSet<Mensajeria>  agentesAsignados = new HashSet<Mensajeria>();
     public static Zona  ZonaGestionadaActualmente { get; private set; } = null;
-    public static float tZonaGestionadaExpira     = 0f;
-    private const float TIMEOUT_ZONA_GESTIONADA   = 25f;
+    public static float tZonaGestionadaExpira = 0f;
+    private const float TIMEOUT_ZONA_GESTIONADA = 25f;
 
     public bool HaySubastasActivas => subastaEnCurso || contratosActivos.Count > 0;
 
     private class ContratoActivo
     {
-        public string     conversationId;
+        public string conversationId;
         public Mensajeria contratista;
-        public Vector3    punto;
+        public Vector3 punto;
     }
 
     public struct EntradaTarea
     {
         public Vector3 punto;
-        public string  tipoTarea;
+        public string tipoTarea;
     }
 
     void Awake() => comms = GetComponent<Mensajeria>();
@@ -140,7 +140,7 @@ public class GestorContractNet : MonoBehaviour
             return;
         }
 
-        // Ordenar por coste (campo 3 del content del propose: x//y//z//cost)
+        // Se ordenan por coste (campo 3 del content del propose: x//y//z//cost)
         disponibles.Sort((a, b) =>
         {
             float ca = MensajeFIPA.ParsePropose(a.content).cost;
@@ -159,8 +159,8 @@ public class GestorContractNet : MonoBehaviour
         contratosActivos.Add(new ContratoActivo
         {
             conversationId = convIdActual,
-            contratista    = ganadora.sender,
-            punto          = punto
+            contratista = ganadora.sender,
+            punto = punto
         });
 
         MensajeFIPA accept = new MensajeFIPA(
