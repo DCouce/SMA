@@ -29,11 +29,8 @@ public class ProcesarComunicacion : MonoBehaviour
         capaCom        = GetComponent<CapaComunicacion>();
     }
 
-    // ── CFP ─────────────────────────────────────────────────────────────────
-
     public void ProcesarCFP(MensajeFIPA cfp)
     {
-        // Parsear tipo de tarea y punto del content
         var (tipoTarea, punto, zonaNombre) = MensajeFIPA.ParseCFP(cfp.content);
 
         if (gestorCN != null && gestorCN.HaySubastasActivas)
@@ -81,8 +78,6 @@ public class ProcesarComunicacion : MonoBehaviour
         comms.Enviar(cfp.sender, propose);
     }
 
-    // ── AcceptProposal ───────────────────────────────────────────────────────
-
     public void ProcesarAcceptProposal(MensajeFIPA msj)
     {
         var (tipoTarea, punto, zonaNombre) = MensajeFIPA.ParseCFP(msj.content);
@@ -112,8 +107,6 @@ public class ProcesarComunicacion : MonoBehaviour
         comms.Enviar(msj.sender, agree);
     }
 
-    // ── Inform ───────────────────────────────────────────────────────────────
-
     public void ProcesarInform(MensajeFIPA msj)
     {
         (Vector3 posicion, bool llevaElCuadro) = MensajeFIPA.ParseInformPosicion(msj.content);
@@ -127,8 +120,6 @@ public class ProcesarComunicacion : MonoBehaviour
                   $"recibe aviso de cuadro robado de {msj.sender?.gameObject.name}");
         modelo.RegistrarFaltaCuadro();
     }
-
-    // ── QueryIf ──────────────────────────────────────────────────────────────
 
     public void ProcesarQueryIf(MensajeFIPA msj)
     {
@@ -162,8 +153,6 @@ public class ProcesarComunicacion : MonoBehaviour
         capaCom?.NotificarRuidoEraCompañero(msj.conversationId);
     }
 
-    // ── Cancel ───────────────────────────────────────────────────────────────
-
     public void ProcesarCancel(MensajeFIPA cancel)
     {
         bool afectaBloqueo    = bloquearSalida != null &&
@@ -180,7 +169,7 @@ public class ProcesarComunicacion : MonoBehaviour
         // Parar físicamente el comportamiento activo
         if (afectaBloqueo)
         {
-            bloquearSalida.LimpiarContrato();          // ← nuevo método en BloquearSalida
+            bloquearSalida.LimpiarContrato();
             control.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);
         }
         else
@@ -198,8 +187,6 @@ public class ProcesarComunicacion : MonoBehaviour
         informDone.inReplyTo = cancel.replyWith;
         comms.Enviar(cancel.sender, informDone);
     }
-
-    // ── Utils ─────────────────────────────────────────────────────────────────
 
     public float CalcularCosteNavMesh(Vector3 destino)
     {

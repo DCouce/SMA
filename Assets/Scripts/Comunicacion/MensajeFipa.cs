@@ -53,9 +53,6 @@ public class MensajeFIPA
                ")";
     }
 
-    // ─── Helpers: construir content ──────────────────────────────────────────
-
-    // Flotante con punto decimal, cultura invariante
     private static string F(float v) => v.ToString("F2", CultureInfo.InvariantCulture);
 
     // "tipo//x//y//z//zona"  →  cfp / accept-proposal
@@ -78,8 +75,8 @@ public class MensajeFIPA
     public static string ContentQueryIfConfirm(string agente, Vector3 p)
         => $"{agente}//{F(p.x)}//{F(p.y)}//{F(p.z)}";
 
-    // ─── Helpers: parsear content ─────────────────────────────────────────────
 
+    // Parsear content
     private static float P(string s) => float.Parse(s, CultureInfo.InvariantCulture);
 
     private static string[] Partes(string content)

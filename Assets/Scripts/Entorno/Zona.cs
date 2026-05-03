@@ -1,8 +1,6 @@
 using UnityEngine;
 
-// Representa una zona del mapa con sus puntos de entrada/salida.
-// Añadir un BoxCollider (no-trigger) al mismo GameObject: se usa para Contains().
-// Los puntosEntrada son Transforms vacíos colocados a mano en las puertas del escenario.
+// Representa una zona del mapa con sus puntos de entrada/salida/estratégicos.
 public class Zona : MonoBehaviour
 {
     [Header("Identificación")]
@@ -25,7 +23,6 @@ public class Zona : MonoBehaviour
 
     void OnDrawGizmos()
 {
-    // Color basado en el nombre de la zona para distinguirlas
     Gizmos.color = nombreZona switch
     {
         "Zona1" => new Color(1f, 0f, 0f, 0.2f),    // rojo

@@ -37,8 +37,6 @@ public class GestorContractNet : MonoBehaviour
 
     void Awake() => comms = GetComponent<Mensajeria>();
 
-    // ── API pública ──────────────────────────────────────────────────────────
-
     public void IniciarContractNetsSecuenciales(List<Transform> puntos, string zonaNombre)
     {
         List<EntradaTarea> tareas = puntos
@@ -50,8 +48,7 @@ public class GestorContractNet : MonoBehaviour
     public void IniciarContractNetsConTareas(List<EntradaTarea> tareas, string zonaNombre)
         => StartCoroutine(CadenaSecuencial(tareas, zonaNombre));
 
-    // ── Recepción de mensajes ────────────────────────────────────────────────
-
+    // Recepción de mensajes
     public void RecibirPropuesta(MensajeFIPA propose)
     {
         if (!subastaEnCurso) return;
@@ -93,8 +90,6 @@ public class GestorContractNet : MonoBehaviour
         contratosActivos.Clear();
         agentesAsignados.Clear();
     }
-
-    // ── Coroutines ───────────────────────────────────────────────────────────
 
     private IEnumerator CadenaSecuencial(List<EntradaTarea> tareas, string zonaNombre)
     {

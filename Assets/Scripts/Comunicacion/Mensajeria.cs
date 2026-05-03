@@ -1,21 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// Capa de transporte FIPA-ACL del agente guardia.
-// No toma ninguna decisión, solo mueve mensajes de un agente a otro y los redirige al componente correcto según la performativa.
-
 public class Mensajeria : MonoBehaviour
 {
-    // Agentes registrados
     private static readonly List<Mensajeria> red = new List<Mensajeria>();
     public static IReadOnlyList<Mensajeria> Red => red;
 
-    // Evento: se dispara cuando este agente recibe un CFP de otro (siempre ajeno,
-    // ya que Difundir excluye al propio emisor). Permite inferir que hay una
-    // subasta activa en la red sin acceder al estado interno de otros agentes.
     public event System.Action<Mensajeria> OnCFPRecibido;
 
-    // Referencias internas
     private GestorContractNet gestorCN;
     private ProcesarComunicacion procesador;
     private HistorialConversaciones historial;
@@ -33,7 +25,6 @@ public class Mensajeria : MonoBehaviour
 
     void OnDestroy() => red.Remove(this);
 
-    //  ENVÍO
     // Envía un mensaje FIPA directamente a un receptor específico.
     public void Enviar(Mensajeria receptor, MensajeFIPA msj)
     {
@@ -46,7 +37,6 @@ public class Mensajeria : MonoBehaviour
     }
 
     // Difunde un mensaje a todos los agentes de la red excepto a sí mismo.
-    // El campo receiver se rellena con los destinatarios efectivos (spec FIPA).
     public void Difundir(MensajeFIPA msj)
     {
         msj.sender = this;
@@ -64,9 +54,7 @@ public class Mensajeria : MonoBehaviour
             agente.Recibir(msj);
     }
 
-    //  RECEPCIÓN
-    // Punto de entrada de todos los mensajes FIPA recibidos.
-    // Delega al componente apropiado según la performativa.
+    // Entrada de todos los mensajes FIPA recibidos.
     public void Recibir(MensajeFIPA msj)
     {
         historial?.RegistrarRecibido(msj);
@@ -98,9 +86,7 @@ public class Mensajeria : MonoBehaviour
                 Debug.Log($"[{gameObject.name}] reject-proposal de {msj.sender?.gameObject.name}");
                 break;
 
-            // Inform: se despacha por ontología.
-            //   ontology "robo"           → cuadro robado
-            //   ontology "posicion-ladron"→ posición del ladrón
+            // Inform: siguiendo ontología.
             case "inform":
                 if (msj.ontology == "robo")
                     procesador?.ProcesarInformCuadroRobado(msj);
@@ -124,7 +110,7 @@ public class Mensajeria : MonoBehaviour
             // Fin de juego: cancelar contratos activos como gestor y liberar rol contratista
             case "request" when msj.content == "cancelar-contrato":
                 gestorCN?.CancelarTodosLosContratos("juego-terminado");
-                control.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);
+                control?.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);
                 break;
 
             // Cancelar contrato

@@ -1,15 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// Agente coordinador aéreo (rol exclusivo de GESTOR en Contract Net).
-//
-// Al detectar al ladrón en una zona nueva lanza una cadena CN secuencial con DOS tipos de tarea:
-//   [0] Investigar – el guardia más cercano entra a la zona a buscar al ladrón.
-//   [1..N] Bloquear – un guardia distinto cubre cada punto de entrada/salida.
-//
-// La secuencialidad del CN y el filtro agentesAsignados garantizan que el guardia
-// que investiga el interior NO pueda también bloquear una salida en la misma ronda.
-
 public class DronComunicacion : MonoBehaviour
 {
     [Header("Periodicidad")]
@@ -78,12 +69,15 @@ public class DronComunicacion : MonoBehaviour
 
         gestor.CancelarTodosLosContratos("dron-zona-cambiada");
 
+        // Primera tarea Investigar
         List<GestorContractNet.EntradaTarea> tareas = new List<GestorContractNet.EntradaTarea>();
         tareas.Add(new GestorContractNet.EntradaTarea
         {
             punto     = pos,
             tipoTarea = TipoTarea.Investigar
         });
+
+        // Resto de tareas Bloquear
         foreach (Transform punto in zonaActual.puntosEntrada)
         {
             tareas.Add(new GestorContractNet.EntradaTarea

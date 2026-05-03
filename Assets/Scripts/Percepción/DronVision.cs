@@ -24,7 +24,7 @@ public class DronVision : MonoBehaviour
     {
         if (objetivo == null) return;
 
-        // Detección por distancia esférica (sin obstáculos, vuelo por encima)
+        // Detección por distancia esférica
         LadronVisible = Vector3.Distance(transform.position, objetivo.position) <= rangoVision;
 
         if (LadronVisible)
