@@ -104,6 +104,16 @@ public class Modelado : MonoBehaviour
         OnMemoriaActualizada?.Invoke();
     }
 
+    // Actualiza la posición conocida sin tocar ladronALaVista.
+    public void ActualizarPosicionConocida(Vector3 posicion, bool llevaElCuadro)
+    {
+        ultimaPosicionConocidaLadron   = posicion;
+        posicionYaRevisada             = false;
+        tiempoUltimoAvistamientoLadron = Time.time;
+        if (llevaElCuadro && !sabeRobado) sabeRobado = true;
+        OnMemoriaActualizada?.Invoke();
+    }
+
     public void RegistrarPerderLadron()
     {
         ladronALaVista = false;

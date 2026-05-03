@@ -20650,7 +20650,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baea67b1b1883ed42b075dfb71050def, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DronNavegacion
-  objetivo: {fileID: 1260023160}
   alturaVuelo: 1
   tiempoSuavizado: 0.5
   velocidadMax: 4
@@ -26983,7 +26982,7 @@ Transform:
   m_GameObject: {fileID: 388811619}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.010000229, y: 0.102, z: 3.75}
+  m_LocalPosition: {x: -8.29, y: 0.102, z: 3.75}
   m_LocalScale: {x: 0.15, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -28929,6 +28928,9 @@ MonoBehaviour:
   nombreZona: Zona5
   puntosEntrada:
   - {fileID: 964218466}
+  - {fileID: 307006879}
+  - {fileID: 1846823883}
+  - {fileID: 1629963381}
 --- !u!1001 &403194255
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -62573,6 +62575,8 @@ MonoBehaviour:
   puntosEntrada:
   - {fileID: 1459495256}
   - {fileID: 1641522670}
+  - {fileID: 358314437}
+  - {fileID: 1052100713}
 --- !u!1001 &872280929
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -72944,6 +72948,8 @@ MonoBehaviour:
   puntosEntrada:
   - {fileID: 916828474}
   - {fileID: 2018494803}
+  - {fileID: 834679839}
+  - {fileID: 1848734249}
 --- !u!1 &1080212480
 GameObject:
   m_ObjectHideFlags: 0
@@ -92073,6 +92079,8 @@ MonoBehaviour:
   puntosEntrada:
   - {fileID: 420549954}
   - {fileID: 1633006697}
+  - {fileID: 1155392274}
+  - {fileID: 1772568814}
 --- !u!1001 &1375533773
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -106830,6 +106838,8 @@ MonoBehaviour:
   puntosEntrada:
   - {fileID: 553507634}
   - {fileID: 1497089739}
+  - {fileID: 1841712406}
+  - {fileID: 1180154056}
 --- !u!1001 &1570127290
 PrefabInstance:
   m_ObjectHideFlags: 0

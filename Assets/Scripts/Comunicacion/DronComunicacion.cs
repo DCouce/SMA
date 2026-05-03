@@ -56,7 +56,7 @@ public class DronComunicacion : MonoBehaviour
             ComprobarCambioDeZona(vision.PosicionLadron, vision.LadronRobo);
     }
 
-    private void MarcarRedOcupada()
+    private void MarcarRedOcupada(Mensajeria emisor)
     {
         redOcupada        = true;
         tRedOcupadaExpira = Time.time + TIMEOUT_RED;

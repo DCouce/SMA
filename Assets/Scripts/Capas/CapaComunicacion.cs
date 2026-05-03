@@ -37,6 +37,8 @@ public class CapaComunicacion : MonoBehaviour
     private bool  redOcupada         = false;
     private float tRedOcupadaExpira  = 0f;
     private const float TIMEOUT_RED  = 25f;
+    private float tPerdidaLadron = -1f;
+    private const float TIMEOUT_PERDER_LADRON = 5f;
 
     void Awake()
     {
@@ -46,6 +48,18 @@ public class CapaComunicacion : MonoBehaviour
         modelo = GetComponent<Modelado>();
     }
 
+    void Update()
+    {
+        if (tPerdidaLadron < 0f) return;
+        if (Time.time - tPerdidaLadron < TIMEOUT_PERDER_LADRON) return;
+
+        // Han pasado 5 segundos sin ver al ladrón → cancelar contratos activos
+        tPerdidaLadron = -1f;
+        ultimaZonaCFP  = null;
+
+        if (gestor != null)
+            gestor.CancelarTodosLosContratos("ladron-perdido-timeout");
+    }
     void OnEnable()
     {
         if (sensor != null)
@@ -74,19 +88,25 @@ public class CapaComunicacion : MonoBehaviour
             comms.OnCFPRecibido -= MarcarRedOcupada;
     }
 
-    private void MarcarRedOcupada()
+    private void MarcarRedOcupada(Mensajeria emisor)
     {
+        // Si el CFP viene del dron, no bloqueamos la red para los guardias
+        if (emisor != null && emisor.GetComponent<DronComunicacion>() != null) return;
+
         redOcupada        = true;
         tRedOcupadaExpira = Time.time + TIMEOUT_RED;
     }
 
     private void AlVerLadron(Vector3 pos, bool llevaElCuadro)
-        => ComprobarCambioDeZona(pos, llevaElCuadro);
+    {
+        tPerdidaLadron = -1f;             // volvemos a verlo, cancelamos el countdown
+        ComprobarCambioDeZona(pos, llevaElCuadro);
+    }
 
     private void AlPerderLadron()
     {
         convIdInformActual = null;
-        ultimaZonaCFP      = null;
+        tPerdidaLadron     = Time.time;   // empezamos a contar
     }
 
     private void AlDetectarCuadroRobado()

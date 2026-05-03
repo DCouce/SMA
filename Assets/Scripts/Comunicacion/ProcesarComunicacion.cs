@@ -50,6 +50,13 @@ public class ProcesarComunicacion : MonoBehaviour
             return;
         }
 
+        if (bloquearSalida != null && bloquearSalida.EstaActivo() &&
+            Vector3.Distance(bloquearSalida.PuntoActual(), punto) < 0.5f)
+        {
+            EnviarRefuse(cfp, "punto-ya-cubierto");
+            return;
+        }
+
         if (modelo.ladronALaVista)
         {
             EnviarRefuse(cfp, "agente-ocupado");
@@ -109,10 +116,8 @@ public class ProcesarComunicacion : MonoBehaviour
 
     public void ProcesarInform(MensajeFIPA msj)
     {
-        // ontology == "posicion-ladron"  →  content: "x//y//z//llevaElCuadro"
-        var (posicion, llevaElCuadro) = MensajeFIPA.ParseInformPosicion(msj.content);
-        modelo.RegistrarVerLadron(posicion, llevaElCuadro);
-        modelo.RegistrarPerderLadron();
+        (Vector3 posicion, bool llevaElCuadro) = MensajeFIPA.ParseInformPosicion(msj.content);
+        modelo.ActualizarPosicionConocida(posicion, llevaElCuadro);
     }
 
     public void ProcesarInformCuadroRobado(MensajeFIPA msj)
@@ -168,9 +173,21 @@ public class ProcesarComunicacion : MonoBehaviour
         if (!afectaBloqueo && !afectaInvestigar) return;
 
         Debug.Log($"<color=yellow>[CANCEL]</color> {gameObject.name} abandona tarea CN " +
-                  $"conv:{cancel.conversationId}");
+                $"conv:{cancel.conversationId}");
 
         conversacionBloqueActiva = null;
+
+        // Parar físicamente el comportamiento activo
+        if (afectaBloqueo)
+        {
+            bloquearSalida.LimpiarContrato();          // ← nuevo método en BloquearSalida
+            control.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);
+        }
+        else
+        {
+            control.RetirarPropuesta(Control.PRIORIDAD_PLANIFICACION);
+        }
+
         capaCom?.NotificarTareaCancelada();
 
         MensajeFIPA informDone = new MensajeFIPA(

@@ -13,7 +13,7 @@ public class Mensajeria : MonoBehaviour
     // Evento: se dispara cuando este agente recibe un CFP de otro (siempre ajeno,
     // ya que Difundir excluye al propio emisor). Permite inferir que hay una
     // subasta activa en la red sin acceder al estado interno de otros agentes.
-    public event System.Action OnCFPRecibido;
+    public event System.Action<Mensajeria> OnCFPRecibido;
 
     // Referencias internas
     private GestorContractNet gestorCN;
@@ -83,7 +83,7 @@ public class Mensajeria : MonoBehaviour
 
             // Contract Net: rol contratista
             case "cfp":
-                OnCFPRecibido?.Invoke();
+                OnCFPRecibido?.Invoke(msj.sender);
                 if (procesador != null)
                     procesador.ProcesarCFP(msj);
                 else

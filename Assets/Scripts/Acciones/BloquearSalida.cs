@@ -17,6 +17,8 @@ public class BloquearSalida : MonoBehaviour
     private const float INTERVALO_PASO = 3f;
 
     public string ConversacionActual() => convIdActual;
+    public bool EstaActivo () => !string.IsNullOrEmpty(convIdActual);
+    public Vector3 PuntoActual() => puntoGuardia;
 
     void Awake()
     {
@@ -33,6 +35,12 @@ public class BloquearSalida : MonoBehaviour
         enPosicion   = false;
     }
 
+    public void LimpiarContrato()
+    {
+        gestorActual = null;
+        convIdActual = null;
+        // No tocamos puntoGuardia, no hace falta
+    }
     void OnEnable()
     {
         enPosicion = false;
@@ -43,6 +51,7 @@ public class BloquearSalida : MonoBehaviour
             agent.SetDestination(puntoGuardia);
         }
     }
+
 
     void Update()
     {
@@ -92,6 +101,7 @@ public class BloquearSalida : MonoBehaviour
             "fipa-contract-net"));
     }
 
+        
     void OnDisable()
     {
         if (agent != null && agent.isOnNavMesh) agent.isStopped = true;

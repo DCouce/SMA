@@ -61,17 +61,6 @@ public class GestorContractNet : MonoBehaviour
         Debug.Log($"<color=cyan>[CONTRACT NET]</color> {gameObject.name}: " +
                   $"{informDone.sender?.gameObject.name} completó su tarea. " +
                   $"[conv:{informDone.conversationId}]");
-        LiberarContrato(informDone.conversationId);
-    }
-
-    private void LiberarContrato(string conversationId)
-    {
-        ContratoActivo contrato = contratosActivos.Find(c => c.conversationId == conversationId);
-        if (contrato != null)
-        {
-            agentesAsignados.Remove(contrato.contratista);
-            contratosActivos.Remove(contrato);
-        }
     }
 
     public void AbortarSubastas()
