@@ -40,18 +40,23 @@ public class Mensajeria : MonoBehaviour
         receptor.Recibir(msj);
     }
 
-    // Difunde un mensaje a todos los agentes de la red excepto a sí mismo
+    // Difunde un mensaje a todos los agentes de la red excepto a sí mismo.
+    // El campo receiver se rellena con los destinatarios efectivos (spec FIPA).
     public void Difundir(MensajeFIPA msj)
     {
         msj.sender = this;
 
+        List<Mensajeria> destinatarios = new List<Mensajeria>();
+        foreach (Mensajeria agente in red)
+            if (agente != this && agente != null)
+                destinatarios.Add(agente);
+
+        msj.receiver = destinatarios.ToArray();
+
         historial?.RegistrarEnviado(msj);
         Debug.Log($"<color=lime>[FIPA ↦]</color> {msj}");
-        foreach (Mensajeria agente in red)
-        {
-            if (agente != this && agente != null)
-                agente.Recibir(msj);
-        }
+        foreach (Mensajeria agente in msj.receiver)
+            agente.Recibir(msj);
     }
 
     //  RECEPCIÓN
@@ -67,72 +72,72 @@ public class Mensajeria : MonoBehaviour
         switch (msj.performativa)
         {
             // Contract Net: rol gestor
-            case "Propose":
+            case "propose":
                 gestorCN?.RecibirPropuesta(msj);
                 break;
 
-            case "InformDone":
-                gestorCN?.RecibirInformDone(msj);
-                break;
-
             // Contract Net: rol contratista
-            case "CallForProposal":
+            case "cfp":
                 procesador?.ProcesarCFP(msj);
                 break;
 
-            case "AcceptProposal":
+            case "accept-proposal":
                 procesador?.ProcesarAcceptProposal(msj);
                 break;
 
-            case "RejectProposal":
-                Debug.Log($"[{gameObject.name}] Propuesta rechazada por {msj.sender?.gameObject.name}");
+            case "reject-proposal":
+                Debug.Log($"[{gameObject.name}] reject-proposal de {msj.sender?.gameObject.name}");
                 break;
 
-            // Inform genérico (posición del ladrón)
-            case "Inform":
-                procesador?.ProcesarInform(msj);
+            // Inform unificado: se despacha según el tipo de contenidoObjeto.
+            // Cubre: posición ladrón, cuadro robado y tarea completada (CN).
+            case "inform":
+                if (msj.contenidoObjeto is ContenidoInformCuadroRobado)
+                    procesador?.ProcesarInformCuadroRobado(msj);
+                else if (msj.contenidoObjeto is ContenidoInformPosicion)
+                    procesador?.ProcesarInform(msj);
+                else
+                    gestorCN?.RecibirInformDone(msj);
                 break;
 
-            // Inform cuadro robado
-            case "InformCuadroRobado":
-                procesador?.ProcesarInformCuadroRobado(msj);
+            case "inform-done":
+                gestorCN?.RecibirInformDone(msj);
                 break;
 
-            // QueryIf (para el ruido)
-            case "QueryIf":
-                procesador?.ProcesarQueryIf(msj);
-                break;
-
-            // Confirmación positiva a QueryIf
-            case "QueryIfConfirm":
+            case "query-if-confirm":
                 procesador?.ProcesarQueryIfConfirm(msj);
                 break;
 
+            // QueryIf (identificación de ruido)
+            case "query-if":
+                procesador?.ProcesarQueryIf(msj);
+                break;
+
             // Fin de juego
-            case "Request" when msj.content == "cancelar-contrato":
+            case "request" when msj.content == "cancelar-contrato":
                 control.RetirarPropuesta(Control.PRIORIDAD_SUBASTA);
                 break;
 
             // Cancelar contrato
-            case "Cancel":
+            case "cancel":
                 procesador?.ProcesarCancel(msj);
                 break;
 
             // Confirmaciones
-            case "Agree":
-                Debug.Log($"[{gameObject.name}] Agree recibido de {msj.sender?.gameObject.name}");
+            case "agree":
+                Debug.Log($"[{gameObject.name}] agree de {msj.sender?.gameObject.name}");
                 break;
 
-            case "Refuse":
-                Debug.Log($"[{gameObject.name}] Refuse recibido de {msj.sender?.gameObject.name}");
+            case "refuse":
+                Debug.Log($"[{gameObject.name}] refuse de {msj.sender?.gameObject.name}");
                 break;
 
-            case "Failure":
-                Debug.Log($"[{gameObject.name}] Failure recibido de {msj.sender?.gameObject.name}");
+            case "failure":
+                Debug.Log($"[{gameObject.name}] failure de {msj.sender?.gameObject.name}");
                 break;
 
-            case "NotUnderstood":
-                Debug.LogWarning($"[{gameObject.name}] NotUnderstood recibido de " +
+            case "not-understood":
+                Debug.LogWarning($"[{gameObject.name}] not-understood de " +
                                  $"{msj.sender?.gameObject.name}: {msj.content}");
                 break;
 
@@ -147,9 +152,9 @@ public class Mensajeria : MonoBehaviour
     public void EnviarNotUnderstood(MensajeFIPA msj)
     {
         MensajeFIPA nu = new MensajeFIPA(
-            "NotUnderstood",
+            "not-understood",
             this,
-            $"(not-understood (performativa {msj.performativa}) (razon no-implementada))",
+            $"(performativa {msj.performativa}) (razon no-implementada)",
             msj.conversationId);
         nu.inReplyTo = msj.replyWith;
         if (msj.sender != null) Enviar(msj.sender, nu);

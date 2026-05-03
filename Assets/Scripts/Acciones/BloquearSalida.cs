@@ -118,10 +118,9 @@ public class BloquearSalida : MonoBehaviour
         if (gestorActual == null || comms == null) return;
 
         MensajeFIPA informDone = new MensajeFIPA(
-            "InformDone",
+            "inform-done",
             comms,
-            $"(inform-done (action {gameObject.name} " +
-            $"(ir-a (coord {puntoGuardia.x:F1} {puntoGuardia.y:F1} {puntoGuardia.z:F1}))))",
+            $"(tarea-completada (ir-a (coord {puntoGuardia.x:F1} {puntoGuardia.y:F1} {puntoGuardia.z:F1})))",
             convIdActual,
             "fipa-contract-net");
 

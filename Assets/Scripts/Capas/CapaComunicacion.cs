@@ -114,11 +114,13 @@ public class CapaComunicacion : MonoBehaviour
         };
 
         MensajeFIPA inform = new MensajeFIPA(
-            "InformCuadroRobado",
+            "inform",
             comms,
-            "(inform (cuadro-robado true))",
+            $"(cuadro-robado (posicion {sensor.posicionBaseCuadro?.position.x:F1} " +
+            $"{sensor.posicionBaseCuadro?.position.y:F1} {sensor.posicionBaseCuadro?.position.z:F1}))",
             MensajeFIPA.GenerarConversationId(),
             "fipa-inform");
+        inform.ontology        = "seguridad-museo";
         inform.contenidoObjeto = contenido;
 
         comms.Difundir(inform);
@@ -153,10 +155,9 @@ public class CapaComunicacion : MonoBehaviour
         ContenidoQueryIf contenido = new ContenidoQueryIf { posicionRuido = posicionRuido };
 
         MensajeFIPA queryIf = new MensajeFIPA(
-            "QueryIf",
+            "query-if",
             comms,
-            $"(query-if (agente-en-posicion " +
-            $"(coord {posicionRuido.x:F1} {posicionRuido.y:F1} {posicionRuido.z:F1})))",
+            $"(agente-en-posicion (coord {posicionRuido.x:F1} {posicionRuido.y:F1} {posicionRuido.z:F1}))",
             queryIfConvId,
             "fipa-query");
         queryIf.contenidoObjeto = contenido;
@@ -220,14 +221,13 @@ public class CapaComunicacion : MonoBehaviour
         };
 
         MensajeFIPA inform = new MensajeFIPA(
-            "Inform",
+            "inform",
             comms,
-            $"(posicion-ladron (= (ubicacion ladron) " +
-            $"(coord {pos.x:F1} {pos.y:F1} {pos.z:F1})) " +
+            $"(ubicacion ladron (coord {pos.x:F1} {pos.y:F1} {pos.z:F1})) " +
             $"(zona {zonaNombre}) " +
-            $"(lleva-cuadro {llevaElCuadro.ToString().ToLower()}))",
+            $"(lleva-cuadro {llevaElCuadro.ToString().ToLower()})",
             convIdInformActual,
-            "fipa-request");
+            "fipa-inform");
         inform.contenidoObjeto = contenido;
 
         comms.Difundir(inform);

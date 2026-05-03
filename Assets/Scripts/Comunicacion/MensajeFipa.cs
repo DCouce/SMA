@@ -31,6 +31,9 @@ public class MensajeFIPA
     // Etiqueta del mensaje al que este es respuesta
     public string inReplyTo;
 
+    // Ontología que define el vocabulario del :content (distingue tipos de inform)
+    public string ontology;
+
     // Constructor con los campos mínimos necesarios
     public MensajeFIPA(
         string performativa,
@@ -64,7 +67,8 @@ public class MensajeFIPA
         return $"  :performativa {performativa}\n" +
                $"  :sender {sender?.gameObject.name ?? "?"}\n" +
                $"  :receiver (set {recv})\n" +
-               $"  :content \"{content}\"\n" +
+               $"  :content // {content} //\n" +
+               (ontology       != null ? $"  :ontology {ontology}\n"             : "") +
                (protocol       != null ? $"  :protocol {protocol}\n"             : "") +
                (conversationId != null ? $"  :conversation-id {conversationId}\n" : "") +
                (replyWith      != null ? $"  :reply-with {replyWith}\n"          : "") +

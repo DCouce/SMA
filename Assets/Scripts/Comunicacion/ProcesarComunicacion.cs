@@ -70,9 +70,9 @@ public class ProcesarComunicacion : MonoBehaviour
         if (!string.IsNullOrEmpty(conversacionBloqueActiva))
         {
             MensajeFIPA refuse = new MensajeFIPA(
-                "Refuse",
+                "refuse",
                 comms,
-                $"(refuse (action {gameObject.name} bloquear-salida) (agente-ya-asignado))",
+                "(agente-ya-asignado)",
                 cfp.conversationId,
                 cfp.protocol);
             refuse.inReplyTo = cfp.replyWith;
@@ -84,9 +84,9 @@ public class ProcesarComunicacion : MonoBehaviour
         if (modelo.ladronALaVista)
         {
             MensajeFIPA refuse = new MensajeFIPA(
-                "Refuse",
+                "refuse",
                 comms,
-                $"(refuse (action {gameObject.name} bloquear-salida) (agente-ocupado persiguiendo))",
+                "(agente-ocupado persiguiendo)",
                 cfp.conversationId,
                 cfp.protocol);
             refuse.inReplyTo = cfp.replyWith;
@@ -97,7 +97,19 @@ public class ProcesarComunicacion : MonoBehaviour
         // Calcular coste para el punto y enviar Propose
         Vector3 punto = contenidoCFP.puntoSalida;
         float coste = CalcularCosteNavMesh(punto);
-        if (coste >= float.MaxValue) return; // punto inalcanzable, no respondemos
+
+        if (coste >= float.MaxValue)
+        {
+            MensajeFIPA refuseInalcanzable = new MensajeFIPA(
+                "refuse",
+                comms,
+                "(punto-inalcanzable)",
+                cfp.conversationId,
+                cfp.protocol);
+            refuseInalcanzable.inReplyTo = cfp.replyWith;
+            comms.Enviar(cfp.sender, refuseInalcanzable);
+            return;
+        }
 
         ContenidoPropose oferta = new ContenidoPropose
         {
@@ -106,11 +118,10 @@ public class ProcesarComunicacion : MonoBehaviour
         };
 
         MensajeFIPA propose = new MensajeFIPA(
-            "Propose",
+            "propose",
             comms,
-            $"(propose (action {gameObject.name} (ir-a " +
-            $"(coord {punto.x:F1} {punto.y:F1} {punto.z:F1}))) " +
-            $"(= (coste-navegacion) {coste:F1}))",
+            $"(ir-a (coord {punto.x:F1} {punto.y:F1} {punto.z:F1})) " +
+            $"(coste-navegacion {coste:F1})",
             cfp.conversationId,
             cfp.protocol);
         propose.contenidoObjeto = oferta;
@@ -142,10 +153,9 @@ public class ProcesarComunicacion : MonoBehaviour
 
         // Confirmar con Agree
         MensajeFIPA agree = new MensajeFIPA(
-            "Agree",
+            "agree",
             comms,
-            $"(agree (action {gameObject.name} (ir-a " +
-            $"(coord {tarea.puntoDestino.x:F1} {tarea.puntoDestino.y:F1} {tarea.puntoDestino.z:F1}))) true)",
+            $"(ir-a (coord {tarea.puntoDestino.x:F1} {tarea.puntoDestino.y:F1} {tarea.puntoDestino.z:F1}))",
             msj.conversationId,
             msj.protocol);
         agree.inReplyTo = msj.replyWith;
@@ -191,10 +201,10 @@ public class ProcesarComunicacion : MonoBehaviour
             };
 
             MensajeFIPA confirm = new MensajeFIPA(
-                "QueryIfConfirm",
+                "query-if-confirm",
                 comms,
-                $"(query-if-confirm (agente {gameObject.name}) " +
-                $"(posicion {transform.position.x:F1} {transform.position.y:F1} {transform.position.z:F1}))",
+                $"(agente {gameObject.name}) " +
+                $"(posicion {transform.position.x:F1} {transform.position.y:F1} {transform.position.z:F1})",
                 msj.conversationId,
                 "fipa-query");
             confirm.contenidoObjeto = respuesta;
@@ -239,9 +249,9 @@ public class ProcesarComunicacion : MonoBehaviour
 
         // Responder con InformDone
         MensajeFIPA informDone = new MensajeFIPA(
-            "InformDone",
+            "inform-done",
             comms,
-            "(inform-done (cancel-confirmado))",
+            "(cancel-confirmado)",
             cancel.conversationId,
             "fipa-contract-net");
         informDone.inReplyTo = cancel.replyWith;

@@ -110,9 +110,9 @@ public class GestorContractNet : MonoBehaviour
             if (contrato.contratista != null)
             {
                 MensajeFIPA cancel = new MensajeFIPA(
-                    "Cancel",
+                    "cancel",
                     comms,
-                    $"(cancel (conversation-id {contrato.conversationId}) (razon {razon}))",
+                    $"(razon {razon})",
                     contrato.conversationId,
                     "fipa-contract-net");
 
@@ -151,10 +151,9 @@ public class GestorContractNet : MonoBehaviour
         };
 
         MensajeFIPA cfp = new MensajeFIPA(
-            "CallForProposal",
+            "cfp",
             comms,
-            $"(action ?agente (bloquear-salida " +
-            $"(coord {punto.x:F1} {punto.y:F1} {punto.z:F1})))",
+            $"(bloquear-salida (coord {punto.x:F1} {punto.y:F1} {punto.z:F1}))",
             convIdActual,
             "fipa-contract-net");
         cfp.contenidoObjeto = contenidoCFP;
@@ -226,10 +225,9 @@ public class GestorContractNet : MonoBehaviour
         };
 
         MensajeFIPA accept = new MensajeFIPA(
-            "AcceptProposal",
+            "accept-proposal",
             comms,
-            $"(accept-proposal (action {ganadora.sender?.gameObject.name} " +
-            $"(ir-a (coord {punto.x:F1} {punto.y:F1} {punto.z:F1}))) true)",
+            $"(ir-a (coord {punto.x:F1} {punto.y:F1} {punto.z:F1}))",
             convIdActual,
             "fipa-contract-net");
         accept.contenidoObjeto = tarea;
@@ -243,10 +241,9 @@ public class GestorContractNet : MonoBehaviour
             if (propuesta == ganadora) continue;
 
             MensajeFIPA reject = new MensajeFIPA(
-                "RejectProposal",
+                "reject-proposal",
                 comms,
-                $"(reject-proposal (action {propuesta.sender?.gameObject.name} bloquear-salida) " +
-                $"(mejor-oferta-seleccionada))",
+                "(mejor-oferta-seleccionada)",
                 convIdActual,
                 "fipa-contract-net");
             reject.inReplyTo = propuesta.replyWith;

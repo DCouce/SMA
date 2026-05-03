@@ -75,12 +75,11 @@ public class DronComunicacion : MonoBehaviour
         };
 
         MensajeFIPA inform = new MensajeFIPA(
-            "Inform",
+            "inform",
             comms,
-            $"(posicion-ladron (= (ubicacion ladron) " +
-            $"(coord {pos.x:F1} {pos.y:F1} {pos.z:F1})) " +
+            $"(ubicacion ladron (coord {pos.x:F1} {pos.y:F1} {pos.z:F1})) " +
             $"(zona {zonaNombre}) " +
-            $"(lleva-cuadro {llevaElCuadro.ToString().ToLower()}))",
+            $"(lleva-cuadro {llevaElCuadro.ToString().ToLower()})",
             MensajeFIPA.GenerarConversationId(),
             "fipa-inform");
         inform.contenidoObjeto = contenido;
