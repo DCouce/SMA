@@ -2,48 +2,41 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-// Capa de Comunicación: funciona en PARALELO a Reactiva, Planificación y Modelado.
-//
-// Emite dos eventos distintos para que CapaReactiva active el comportamiento correcto:
-//   - OnTareaBloquear   → el guardia debe ir a bloquear un punto de salida (BloquearSalida)
-//   - OnTareaInvestigar → el guardia debe entrar a la zona a buscar al ladrón (Investigar)
-//   - OnTareaCancelada  → el gestor canceló el contrato activo
-
 public class CapaComunicacion : MonoBehaviour
 {
     // ── Eventos para CapaReactiva ────────────────────────────────────────────
     public event System.Action<Vector3, string> OnTareaBloquear;
     public event System.Action<Vector3, string> OnTareaInvestigar;
-    public event System.Action                  OnTareaCancelada;
+    public event System.Action OnTareaCancelada;
 
-    [Header("QueryIf – Identificación de ruido")]
-    public float timeoutQueryIf      = 0.5f;
+    [Header("QueryIf - Identificación de ruido")]
+    public float timeoutQueryIf = 0.5f;
     public float distanciaMinimaRuido = 2f;
 
-    private SensorVision      sensor;
-    private Mensajeria        comms;
+    private SensorVision sensor;
+    private Mensajeria comms;
     private GestorContractNet gestor;
-    private Modelado          modelo;
+    private Modelado modelo;
 
-    private Zona   ultimaZonaCFP;
+    private Zona ultimaZonaCFP;
     private string convIdInformActual;
 
-    private bool   queryIfActivo          = false;
-    private bool   queryIfConfirmado      = false;
-    private string queryIfConvId          = null;
+    private bool queryIfActivo = false;
+    private bool queryIfConfirmado = false;
+    private string queryIfConvId = null;
     private Vector3 posicionUltimoQueryIf = Vector3.positiveInfinity;
 
     // Red ocupada: inferido por observación de CFPs ajenos
-    private bool  redOcupada         = false;
-    private float tRedOcupadaExpira  = 0f;
-    private const float TIMEOUT_RED  = 25f;
+    private bool redOcupada = false;
+    private float tRedOcupadaExpira = 0f;
+    private const float TIMEOUT_RED = 25f;
     private float tPerdidaLadron = -1f;
     private const float TIMEOUT_PERDER_LADRON = 5f;
 
     void Awake()
     {
         sensor = GetComponent<SensorVision>();
-        comms  = GetComponent<Mensajeria>();
+        comms = GetComponent<Mensajeria>();
         gestor = GetComponent<GestorContractNet>();
         modelo = GetComponent<Modelado>();
     }
@@ -53,7 +46,7 @@ public class CapaComunicacion : MonoBehaviour
         if (tPerdidaLadron < 0f) return;
         if (Time.time - tPerdidaLadron < TIMEOUT_PERDER_LADRON) return;
 
-        // Han pasado 5 segundos sin ver al ladrón → cancelar contratos activos
+        // Han pasado 5 segundos sin ver al ladrón entonces cancelar contratos activos
         tPerdidaLadron = -1f;
         ultimaZonaCFP  = null;
 
@@ -64,8 +57,8 @@ public class CapaComunicacion : MonoBehaviour
     {
         if (sensor != null)
         {
-            sensor.OnLadronVisto           += AlVerLadron;
-            sensor.OnLadronPerdido         += AlPerderLadron;
+            sensor.OnLadronVisto += AlVerLadron;
+            sensor.OnLadronPerdido += AlPerderLadron;
             sensor.OnCuadroRobadoDetectado += AlDetectarCuadroRobado;
         }
         if (modelo != null)
@@ -78,8 +71,8 @@ public class CapaComunicacion : MonoBehaviour
     {
         if (sensor != null)
         {
-            sensor.OnLadronVisto           -= AlVerLadron;
-            sensor.OnLadronPerdido         -= AlPerderLadron;
+            sensor.OnLadronVisto -= AlVerLadron;
+            sensor.OnLadronPerdido -= AlPerderLadron;
             sensor.OnCuadroRobadoDetectado -= AlDetectarCuadroRobado;
         }
         if (modelo != null)
@@ -93,7 +86,7 @@ public class CapaComunicacion : MonoBehaviour
         // Si el CFP viene del dron, no bloqueamos la red para los guardias
         if (emisor != null && emisor.GetComponent<DronComunicacion>() != null) return;
 
-        redOcupada        = true;
+        redOcupada = true;
         tRedOcupadaExpira = Time.time + TIMEOUT_RED;
     }
 
@@ -106,7 +99,7 @@ public class CapaComunicacion : MonoBehaviour
     private void AlPerderLadron()
     {
         convIdInformActual = null;
-        tPerdidaLadron     = Time.time;   // empezamos a contar
+        tPerdidaLadron = Time.time;   // empezamos a contar
     }
 
     private void AlDetectarCuadroRobado()
@@ -144,9 +137,9 @@ public class CapaComunicacion : MonoBehaviour
 
     private IEnumerator CicloQueryIf(Vector3 posicionRuido)
     {
-        queryIfActivo     = true;
+        queryIfActivo = true;
         queryIfConfirmado = false;
-        queryIfConvId     = MensajeFIPA.GenerarConversationId();
+        queryIfConvId = MensajeFIPA.GenerarConversationId();
 
         MensajeFIPA queryIf = new MensajeFIPA(
             "query-if", comms,
@@ -186,7 +179,7 @@ public class CapaComunicacion : MonoBehaviour
             Time.time < GestorContractNet.tZonaGestionadaExpira) return;
         redOcupada    = false;
         ultimaZonaCFP = zonaActual;
-        EnviarInformCambioZona(pos, llevaElCuadro, zonaActual.nombreZona);
+        EnviarInformCambioZona(pos, llevaElCuadro);
 
         if (gestor != null)
         {
@@ -196,9 +189,7 @@ public class CapaComunicacion : MonoBehaviour
                 zonaActual.nombreZona);
         }
     }
-
-
-    private void EnviarInformCambioZona(Vector3 pos, bool llevaElCuadro, string zonaNombre)
+    private void EnviarInformCambioZona(Vector3 pos, bool llevaElCuadro)
     {
         if (comms == null) return;
 
@@ -214,8 +205,7 @@ public class CapaComunicacion : MonoBehaviour
         comms.Difundir(inform);
     }
 
-    // ── Llamadas desde ProcesarComunicacion ─────────────────────────────────
-
+    // Llamadas desde ProcesarComunicacion
     // Activa el comportamiento correcto en CapaReactiva según el tipo de tarea CN ganada.
     public void NotificarTareaAsignada(Vector3 punto, string zona, string tipoTarea)
     {

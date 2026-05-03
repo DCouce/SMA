@@ -4,14 +4,14 @@ using UnityEngine.AI;
 public class BloquearSalida : MonoBehaviour
 {
     private NavMeshAgent agent;
-    private Mensajeria   comms;
+    private Mensajeria comms;
 
-    private bool    enPosicion   = false;
+    private bool enPosicion = false;
     private Vector3 puntoGuardia;
-    private float   tSiguienteDestino;
+    private float tSiguienteDestino;
 
     private Mensajeria gestorActual;
-    private string     convIdActual;
+    private string convIdActual;
 
     private const float RADIO_PATRULLA = 1.5f;
     private const float INTERVALO_PASO = 3f;
@@ -32,14 +32,13 @@ public class BloquearSalida : MonoBehaviour
         puntoGuardia = punto;
         gestorActual = gestor;
         convIdActual = convId;
-        enPosicion   = false;
+        enPosicion = false;
     }
 
     public void LimpiarContrato()
     {
         gestorActual = null;
         convIdActual = null;
-        // No tocamos puntoGuardia, no hace falta
     }
     void OnEnable()
     {
@@ -47,7 +46,7 @@ public class BloquearSalida : MonoBehaviour
         if (agent != null && agent.isOnNavMesh)
         {
             agent.isStopped = false;
-            agent.speed     = 0.8f;
+            agent.speed = 0.8f;
             agent.SetDestination(puntoGuardia);
         }
     }
@@ -59,7 +58,7 @@ public class BloquearSalida : MonoBehaviour
         {
             if (!agent.pathPending && agent.hasPath && agent.remainingDistance < 0.4f)
             {
-                enPosicion        = true;
+                enPosicion = true;
                 tSiguienteDestino = Time.time + INTERVALO_PASO;
 
                 Debug.Log($"<color=blue>[BLOQUEO]</color> {gameObject.name} en posición en {puntoGuardia}.");
@@ -82,7 +81,7 @@ public class BloquearSalida : MonoBehaviour
     {
         for (int i = 0; i < 8; i++)
         {
-            Vector2 offset    = Random.insideUnitCircle * RADIO_PATRULLA;
+            Vector2 offset = Random.insideUnitCircle * RADIO_PATRULLA;
             Vector3 candidato = puntoGuardia + new Vector3(offset.x, 0f, offset.y);
             if (NavMesh.SamplePosition(candidato, out NavMeshHit hit, RADIO_PATRULLA, NavMesh.AllAreas))
                 return hit.position;

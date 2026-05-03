@@ -25,12 +25,8 @@ public class DronNavegacion : MonoBehaviour
         {
             destinoActual = vision.PosicionLadron + Vector3.up * alturaVuelo;
         }
-        // Si no lo ve, se queda donde está (podría quedarse quieto o patrullar lentamente)
-        // En este caso, no se mueve; el destinoActual se mantiene en la última posición vista.
-        // Opcionalmente, podríamos hacer que se detenga o regrese a una base.
 
-        // Movimiento suave hacia el destino (si no ve al ladrón, destinoActual no se actualiza,
-        // por lo que el dron se quedará o se moverá solo si había un destino anterior).
+        // Si no lo ve, se queda donde está
         transform.position = Vector3.SmoothDamp(
             transform.position,
             destinoActual,
@@ -39,7 +35,6 @@ public class DronNavegacion : MonoBehaviour
             velocidadMax
         );
 
-        // Rotación hacia el destino (solo si hay dirección significativa)
         Vector3 dir = destinoActual - transform.position;
         dir.y = 0;
         if (dir != Vector3.zero)
