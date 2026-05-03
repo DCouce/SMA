@@ -33,11 +33,8 @@ public class ProcesarComunicacion : MonoBehaviour
 
     public void ProcesarCFP(MensajeFIPA cfp)
     {
-        if (cfp.contenidoObjeto is not ContenidoCFP contenidoCFP)
-        {
-            comms.EnviarNotUnderstood(cfp);
-            return;
-        }
+        // Parsear tipo de tarea y punto del content
+        var (tipoTarea, punto, zonaNombre) = MensajeFIPA.ParseCFP(cfp.content);
 
         if (gestorCN != null && gestorCN.HaySubastasActivas)
         {
@@ -49,40 +46,30 @@ public class ProcesarComunicacion : MonoBehaviour
 
         if (!string.IsNullOrEmpty(conversacionBloqueActiva))
         {
-            EnviarRefuse(cfp, "(agente-ya-asignado)");
+            EnviarRefuse(cfp, "agente-ya-asignado");
             return;
         }
 
         if (modelo.ladronALaVista)
         {
-            EnviarRefuse(cfp, "(agente-ocupado persiguiendo)");
+            EnviarRefuse(cfp, "agente-ocupado");
             return;
         }
 
-        Vector3 punto = contenidoCFP.puntoSalida;
-        float   coste = CalcularCosteNavMesh(punto);
-
+        float coste = CalcularCosteNavMesh(punto);
         if (coste >= float.MaxValue)
         {
-            EnviarRefuse(cfp, "(punto-inalcanzable)");
+            EnviarRefuse(cfp, "punto-inalcanzable");
             return;
         }
-
-        ContenidoPropose oferta = new ContenidoPropose
-        {
-            puntoDestino = punto,
-            costeNavMesh = coste
-        };
 
         MensajeFIPA propose = new MensajeFIPA(
             "propose", comms,
-            $"(ir-a (coord {punto.x:F1} {punto.y:F1} {punto.z:F1})) " +
-            $"(coste-navegacion {coste:F1})",
+            MensajeFIPA.ContentPropose(punto, coste),
             cfp.conversationId,
             cfp.protocol);
-        propose.contenidoObjeto = oferta;
-        propose.inReplyTo       = cfp.replyWith;
-        propose.replyWith       = $"propose-{gameObject.name}-{Time.frameCount}";
+        propose.inReplyTo = cfp.replyWith;
+        propose.replyWith = $"propose-{gameObject.name}-{Time.frameCount}";
 
         comms.Enviar(cfp.sender, propose);
     }
@@ -91,35 +78,27 @@ public class ProcesarComunicacion : MonoBehaviour
 
     public void ProcesarAcceptProposal(MensajeFIPA msj)
     {
-        if (msj.contenidoObjeto is not ContenidoTareaAsignada tarea)
-        {
-            comms.EnviarNotUnderstood(msj);
-            return;
-        }
+        var (tipoTarea, punto, zonaNombre) = MensajeFIPA.ParseCFP(msj.content);
 
         conversacionBloqueActiva = msj.conversationId;
 
         Debug.Log($"<color=cyan>[FIPA]</color> {gameObject.name}: " +
-                  $"tarea [{tarea.tipoTarea}] aceptada → {tarea.puntoDestino} " +
-                  $"[conv:{msj.conversationId}]");
+                  $"tarea [{tipoTarea}] aceptada → {punto} [conv:{msj.conversationId}]");
 
-        if (tarea.tipoTarea == TipoTarea.Investigar)
+        if (tipoTarea == TipoTarea.Investigar)
         {
-            // Configurar Investigar y notificar a CapaReactiva → OnTareaInvestigar
-            investigar.SetPuntoRuido(tarea.puntoDestino);
-            capaCom?.NotificarTareaAsignada(tarea.puntoDestino, tarea.zonaNombre, TipoTarea.Investigar);
+            investigar.SetPuntoRuido(punto);
+            capaCom?.NotificarTareaAsignada(punto, zonaNombre, TipoTarea.Investigar);
         }
         else
         {
-            // Configurar BloquearSalida y notificar a CapaReactiva → OnTareaBloquear
-            bloquearSalida.SetPunto(tarea.puntoDestino, msj.sender, msj.conversationId, tarea.zonaNombre);
-            capaCom?.NotificarTareaAsignada(tarea.puntoDestino, tarea.zonaNombre, TipoTarea.Bloquear);
+            bloquearSalida.SetPunto(punto, msj.sender, msj.conversationId, zonaNombre);
+            capaCom?.NotificarTareaAsignada(punto, zonaNombre, TipoTarea.Bloquear);
         }
 
-        // Confirmar con Agree en ambos casos
         MensajeFIPA agree = new MensajeFIPA(
             "agree", comms,
-            $"(ir-a (coord {tarea.puntoDestino.x:F1} {tarea.puntoDestino.y:F1} {tarea.puntoDestino.z:F1}))",
+            MensajeFIPA.ContentVec3(punto),
             msj.conversationId,
             msj.protocol);
         agree.inReplyTo = msj.replyWith;
@@ -130,15 +109,15 @@ public class ProcesarComunicacion : MonoBehaviour
 
     public void ProcesarInform(MensajeFIPA msj)
     {
-        if (msj.contenidoObjeto is ContenidoInformPosicion info)
-        {
-            modelo.RegistrarVerLadron(info.posicion, info.llevaElCuadro);
-            modelo.RegistrarPerderLadron();
-        }
+        // ontology == "posicion-ladron"  →  content: "x//y//z//llevaElCuadro"
+        var (posicion, llevaElCuadro) = MensajeFIPA.ParseInformPosicion(msj.content);
+        modelo.RegistrarVerLadron(posicion, llevaElCuadro);
+        modelo.RegistrarPerderLadron();
     }
 
     public void ProcesarInformCuadroRobado(MensajeFIPA msj)
     {
+        // ontology == "robo"  →  content: "x//y//z" (posición base, no usada aquí)
         Debug.Log($"<color=orange>[CUADRO]</color> {gameObject.name}: " +
                   $"recibe aviso de cuadro robado de {msj.sender?.gameObject.name}");
         modelo.RegistrarFaltaCuadro();
@@ -148,25 +127,18 @@ public class ProcesarComunicacion : MonoBehaviour
 
     public void ProcesarQueryIf(MensajeFIPA msj)
     {
-        if (msj.contenidoObjeto is not ContenidoQueryIf consulta) return;
-
-        float distancia = Vector3.Distance(transform.position, consulta.posicionRuido);
+        // content: "x//y//z"
+        Vector3 posicionRuido = MensajeFIPA.ParseVec3(msj.content);
+        float distancia = Vector3.Distance(transform.position, posicionRuido);
 
         if (distancia <= UMBRAL_IDENTIFICACION_RUIDO)
         {
-            ContenidoQueryIfRespuesta respuesta = new ContenidoQueryIfRespuesta
-            {
-                posicionReal = transform.position
-            };
-
             MensajeFIPA confirm = new MensajeFIPA(
                 "query-if-confirm", comms,
-                $"(agente {gameObject.name}) " +
-                $"(posicion {transform.position.x:F1} {transform.position.y:F1} {transform.position.z:F1})",
+                MensajeFIPA.ContentQueryIfConfirm(gameObject.name, transform.position),
                 msj.conversationId,
                 "fipa-query");
-            confirm.contenidoObjeto = respuesta;
-            confirm.inReplyTo       = msj.replyWith;
+            confirm.inReplyTo = msj.replyWith;
             comms.Enviar(msj.sender, confirm);
 
             Debug.Log($"<color=green>[QUERY-IF]</color> {gameObject.name}: " +
@@ -176,11 +148,11 @@ public class ProcesarComunicacion : MonoBehaviour
 
     public void ProcesarQueryIfConfirm(MensajeFIPA msj)
     {
-        if (msj.contenidoObjeto is not ContenidoQueryIfRespuesta) return;
+        // content: "agente//x//y//z"
+        var (agente, _) = MensajeFIPA.ParseQueryIfConfirm(msj.content);
 
         Debug.Log($"<color=green>[QUERY-IF]</color> {gameObject.name}: " +
-                  $"{msj.sender?.gameObject.name} confirma que el ruido era suyo. " +
-                  $"[conv:{msj.conversationId}]");
+                  $"{agente} confirma que el ruido era suyo. [conv:{msj.conversationId}]");
 
         capaCom?.NotificarRuidoEraCompañero(msj.conversationId);
     }
@@ -189,8 +161,6 @@ public class ProcesarComunicacion : MonoBehaviour
 
     public void ProcesarCancel(MensajeFIPA cancel)
     {
-        // El cancel puede referirse a un bloqueo o a una investigación CN.
-        // Comprobamos ambos para saber si nos afecta.
         bool afectaBloqueo    = bloquearSalida != null &&
                                 bloquearSalida.ConversacionActual() == cancel.conversationId;
         bool afectaInvestigar = conversacionBloqueActiva == cancel.conversationId;
@@ -205,7 +175,7 @@ public class ProcesarComunicacion : MonoBehaviour
 
         MensajeFIPA informDone = new MensajeFIPA(
             "inform-done", comms,
-            "(cancel-confirmado)",
+            "cancel-confirmado",
             cancel.conversationId,
             "fipa-cancel-meta-protocol");
         informDone.inReplyTo = cancel.replyWith;
@@ -229,11 +199,13 @@ public class ProcesarComunicacion : MonoBehaviour
 
     public void LiberarBloqueoActivo() => conversacionBloqueActiva = null;
 
-    private void EnviarRefuse(MensajeFIPA cfp, string razon)
+    public void EnviarRefuse(MensajeFIPA cfp, string motivo)
     {
         MensajeFIPA refuse = new MensajeFIPA(
-            "refuse", comms, razon,
-            cfp.conversationId, cfp.protocol);
+            "refuse", comms,
+            motivo,
+            cfp.conversationId,
+            cfp.protocol);
         refuse.inReplyTo = cfp.replyWith;
         comms.Enviar(cfp.sender, refuse);
     }

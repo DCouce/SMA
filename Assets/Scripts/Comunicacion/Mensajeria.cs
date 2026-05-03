@@ -10,6 +10,11 @@ public class Mensajeria : MonoBehaviour
     private static readonly List<Mensajeria> red = new List<Mensajeria>();
     public static IReadOnlyList<Mensajeria> Red => red;
 
+    // Evento: se dispara cuando este agente recibe un CFP de otro (siempre ajeno,
+    // ya que Difundir excluye al propio emisor). Permite inferir que hay una
+    // subasta activa en la red sin acceder al estado interno de otros agentes.
+    public event System.Action OnCFPRecibido;
+
     // Referencias internas
     private GestorContractNet gestorCN;
     private ProcesarComunicacion procesador;
@@ -78,7 +83,11 @@ public class Mensajeria : MonoBehaviour
 
             // Contract Net: rol contratista
             case "cfp":
-                procesador?.ProcesarCFP(msj);
+                OnCFPRecibido?.Invoke();
+                if (procesador != null)
+                    procesador.ProcesarCFP(msj);
+                else
+                    procesador?.EnviarRefuse(msj, "(agente-no-contratista)");
                 break;
 
             case "accept-proposal":
@@ -89,15 +98,14 @@ public class Mensajeria : MonoBehaviour
                 Debug.Log($"[{gameObject.name}] reject-proposal de {msj.sender?.gameObject.name}");
                 break;
 
-            // Inform unificado: se despacha según el tipo de contenidoObjeto.
-            // Cubre: posición ladrón, cuadro robado y tarea completada (CN).
+            // Inform: se despacha por ontología.
+            //   ontology "robo"           → cuadro robado
+            //   ontology "posicion-ladron"→ posición del ladrón
             case "inform":
-                if (msj.contenidoObjeto is ContenidoInformCuadroRobado)
+                if (msj.ontology == "robo")
                     procesador?.ProcesarInformCuadroRobado(msj);
-                else if (msj.contenidoObjeto is ContenidoInformPosicion)
+                else if (msj.ontology == "posicion-ladron")
                     procesador?.ProcesarInform(msj);
-                else
-                    gestorCN?.RecibirInformDone(msj);
                 break;
 
             case "inform-done":

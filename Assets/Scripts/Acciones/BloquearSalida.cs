@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public class BloquearSalida : MonoBehaviour
 {
     private NavMeshAgent agent;
-    private Mensajeria comms;
+    private Mensajeria   comms;
 
     private bool    enPosicion   = false;
     private Vector3 puntoGuardia;
@@ -63,9 +63,8 @@ public class BloquearSalida : MonoBehaviour
         bool llegó = !agent.pathPending && agent.remainingDistance < 0.3f;
         if (llegó && Time.time >= tSiguienteDestino)
         {
-            Vector3 destino = PuntoEnRadio();
             agent.isStopped = false;
-            agent.SetDestination(destino);
+            agent.SetDestination(PuntoEnRadio());
             tSiguienteDestino = Time.time + INTERVALO_PASO;
         }
     }
@@ -74,9 +73,8 @@ public class BloquearSalida : MonoBehaviour
     {
         for (int i = 0; i < 8; i++)
         {
-            Vector2 offset   = Random.insideUnitCircle * RADIO_PATRULLA;
+            Vector2 offset    = Random.insideUnitCircle * RADIO_PATRULLA;
             Vector3 candidato = puntoGuardia + new Vector3(offset.x, 0f, offset.y);
-
             if (NavMesh.SamplePosition(candidato, out NavMeshHit hit, RADIO_PATRULLA, NavMesh.AllAreas))
                 return hit.position;
         }
@@ -87,14 +85,11 @@ public class BloquearSalida : MonoBehaviour
     {
         if (gestorActual == null || comms == null) return;
 
-        MensajeFIPA informDone = new MensajeFIPA(
-            "inform-done",
-            comms,
-            $"(tarea-completada (ir-a (coord {puntoGuardia.x:F1} {puntoGuardia.y:F1} {puntoGuardia.z:F1})))",
+        comms.Enviar(gestorActual, new MensajeFIPA(
+            "inform-done", comms,
+            MensajeFIPA.ContentVec3(puntoGuardia),
             convIdActual,
-            "fipa-contract-net");
-
-        comms.Enviar(gestorActual, informDone);
+            "fipa-contract-net"));
     }
 
     void OnDisable()

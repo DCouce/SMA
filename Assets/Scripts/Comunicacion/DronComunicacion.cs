@@ -23,11 +23,28 @@ public class DronComunicacion : MonoBehaviour
     private Zona  ultimaZonaContratada;
     private float proximoChequeo;
 
+    // Red ocupada: inferido por observación de CFPs ajenos
+    private bool  redOcupada        = false;
+    private float tRedOcupadaExpira = 0f;
+    private const float TIMEOUT_RED = 25f;
+
     void Awake()
     {
         vision = GetComponent<DronVision>();
         gestor = GetComponent<GestorContractNet>();
         comms  = GetComponent<Mensajeria>();
+    }
+
+    void OnEnable()
+    {
+        if (comms != null)
+            comms.OnCFPRecibido += MarcarRedOcupada;
+    }
+
+    void OnDisable()
+    {
+        if (comms != null)
+            comms.OnCFPRecibido -= MarcarRedOcupada;
     }
 
     void Update()
@@ -39,12 +56,20 @@ public class DronComunicacion : MonoBehaviour
             ComprobarCambioDeZona(vision.PosicionLadron, vision.LadronRobo);
     }
 
+    private void MarcarRedOcupada()
+    {
+        redOcupada        = true;
+        tRedOcupadaExpira = Time.time + TIMEOUT_RED;
+    }
+
     private void ComprobarCambioDeZona(Vector3 pos, bool llevaElCuadro)
     {
         Zona zonaActual = GestorZonas.Instance?.ObtenerZona(pos);
         if (zonaActual == null || zonaActual.puntosEntrada.Length == 0) return;
         if (zonaActual == ultimaZonaContratada) return;
+        if (redOcupada && Time.time < tRedOcupadaExpira) return;
 
+        redOcupada           = false;
         ultimaZonaContratada = zonaActual;
 
         Debug.Log($"<color=cyan>[DRON]</color> Ladrón en nueva zona: {zonaActual.nombreZona}. " +
@@ -52,17 +77,12 @@ public class DronComunicacion : MonoBehaviour
 
         gestor.CancelarTodosLosContratos("dron-zona-cambiada");
 
-        // Construir cadena de tareas:
-        //   Primero: INVESTIGAR en la posición actual del ladrón (interior de la zona).
-        //   Luego:   BLOQUEAR cada punto de entrada/salida de la zona.
         List<GestorContractNet.EntradaTarea> tareas = new List<GestorContractNet.EntradaTarea>();
-
         tareas.Add(new GestorContractNet.EntradaTarea
         {
             punto     = pos,
             tipoTarea = TipoTarea.Investigar
         });
-
         foreach (Transform punto in zonaActual.puntosEntrada)
         {
             tareas.Add(new GestorContractNet.EntradaTarea
@@ -73,7 +93,6 @@ public class DronComunicacion : MonoBehaviour
         }
 
         gestor.IniciarContractNetsConTareas(tareas, zonaActual.nombreZona);
-
         DifundirPosicion(pos, llevaElCuadro, zonaActual.nombreZona);
     }
 
@@ -81,20 +100,12 @@ public class DronComunicacion : MonoBehaviour
     {
         if (comms == null) return;
 
-        ContenidoInformPosicion contenido = new ContenidoInformPosicion
-        {
-            posicion      = pos,
-            llevaElCuadro = llevaElCuadro
-        };
-
         MensajeFIPA inform = new MensajeFIPA(
             "inform", comms,
-            $"(ubicacion ladron (coord {pos.x:F1} {pos.y:F1} {pos.z:F1})) " +
-            $"(zona {zonaNombre}) " +
-            $"(lleva-cuadro {llevaElCuadro.ToString().ToLower()})",
+            MensajeFIPA.ContentInformPosicion(pos, llevaElCuadro),
             MensajeFIPA.GenerarConversationId(),
             "fipa-inform");
-        inform.contenidoObjeto = contenido;
+        inform.ontology = "posicion-ladron";
 
         comms.Difundir(inform);
     }

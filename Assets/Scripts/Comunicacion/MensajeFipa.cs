@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Globalization;
 
 [Serializable]
 public class MensajeFIPA
@@ -8,7 +9,7 @@ public class MensajeFIPA
     public Mensajeria  sender;
     public Mensajeria[] receiver;
     public string      content;
-    public object      contenidoObjeto;
+    public string      ontology;
     public string      protocol;
     public string      conversationId;
     public string      replyWith;
@@ -39,15 +40,86 @@ public class MensajeFIPA
             ? string.Join(", ", Array.ConvertAll(receiver, r => r?.gameObject.name ?? "?"))
             : "broadcast";
 
-        return $"  :performativa {performativa}\n" +
+        return $"(\n" +
+               $"  :performativa {performativa}\n" +
                $"  :sender {sender?.gameObject.name ?? "?"}\n" +
                $"  :receiver (set {recv})\n" +
                $"  :content // {content} //\n" +
+               (ontology       != null ? $"  :ontology {ontology}\n"              : "") +
                (protocol       != null ? $"  :protocol {protocol}\n"              : "") +
                (conversationId != null ? $"  :conversation-id {conversationId}\n" : "") +
                (replyWith      != null ? $"  :reply-with {replyWith}\n"           : "") +
                (inReplyTo      != null ? $"  :in-reply-to {inReplyTo}\n"          : "") +
                ")";
+    }
+
+    // ─── Helpers: construir content ──────────────────────────────────────────
+
+    // Flotante con punto decimal, cultura invariante
+    private static string F(float v) => v.ToString("F2", CultureInfo.InvariantCulture);
+
+    // "tipo//x//y//z//zona"  →  cfp / accept-proposal
+    public static string ContentCFP(string tipo, Vector3 p, string zona)
+        => $"{tipo}//{F(p.x)}//{F(p.y)}//{F(p.z)}//{zona}";
+
+    // "x//y//z//cost"  →  propose
+    public static string ContentPropose(Vector3 p, float cost)
+        => $"{F(p.x)}//{F(p.y)}//{F(p.z)}//{F(cost)}";
+
+    // "x//y//z"  →  agree / inform-done / query-if / inform cuadro
+    public static string ContentVec3(Vector3 p)
+        => $"{F(p.x)}//{F(p.y)}//{F(p.z)}";
+
+    // "x//y//z//true|false"  →  inform posicion-ladron
+    public static string ContentInformPosicion(Vector3 p, bool llevaElCuadro)
+        => $"{F(p.x)}//{F(p.y)}//{F(p.z)}//{llevaElCuadro.ToString().ToLower()}";
+
+    // "agente//x//y//z"  →  query-if-confirm
+    public static string ContentQueryIfConfirm(string agente, Vector3 p)
+        => $"{agente}//{F(p.x)}//{F(p.y)}//{F(p.z)}";
+
+    // ─── Helpers: parsear content ─────────────────────────────────────────────
+
+    private static float P(string s) => float.Parse(s, CultureInfo.InvariantCulture);
+
+    private static string[] Partes(string content)
+        => content.Split(new[] { "//" }, StringSplitOptions.None);
+
+    // "tipo//x//y//z//zona"
+    public static (string tipo, Vector3 punto, string zona) ParseCFP(string content)
+    {
+        string[] p = Partes(content);
+        return (p[0],
+                new Vector3(P(p[1]), P(p[2]), P(p[3])),
+                p.Length > 4 ? p[4] : "");
+    }
+
+    // "x//y//z//cost"
+    public static (Vector3 punto, float cost) ParsePropose(string content)
+    {
+        string[] p = Partes(content);
+        return (new Vector3(P(p[0]), P(p[1]), P(p[2])), P(p[3]));
+    }
+
+    // "x//y//z//true|false"
+    public static (Vector3 posicion, bool llevaElCuadro) ParseInformPosicion(string content)
+    {
+        string[] p = Partes(content);
+        return (new Vector3(P(p[0]), P(p[1]), P(p[2])), bool.Parse(p[3]));
+    }
+
+    // "x//y//z"
+    public static Vector3 ParseVec3(string content)
+    {
+        string[] p = Partes(content);
+        return new Vector3(P(p[0]), P(p[1]), P(p[2]));
+    }
+
+    // "agente//x//y//z"
+    public static (string agente, Vector3 posicion) ParseQueryIfConfirm(string content)
+    {
+        string[] p = Partes(content);
+        return (p[0], new Vector3(P(p[1]), P(p[2]), P(p[3])));
     }
 }
 
@@ -56,52 +128,4 @@ public static class TipoTarea
 {
     public const string Bloquear   = "bloquear";
     public const string Investigar = "investigar";
-}
-
-[Serializable]
-public struct ContenidoCFP
-{
-    public Vector3 puntoSalida;
-    public string  zonaNombre;
-    public string  tipoTarea;
-}
-
-[Serializable]
-public struct ContenidoPropose
-{
-    public Vector3 puntoDestino;
-    public float   costeNavMesh;
-}
-
-[Serializable]
-public struct ContenidoTareaAsignada
-{
-    public Vector3 puntoDestino;
-    public string  zonaNombre;
-    public string  tipoTarea;
-}
-
-[Serializable]
-public struct ContenidoInformPosicion
-{
-    public Vector3 posicion;
-    public bool    llevaElCuadro;
-}
-
-[Serializable]
-public struct ContenidoQueryIf
-{
-    public Vector3 posicionRuido;
-}
-
-[Serializable]
-public struct ContenidoQueryIfRespuesta
-{
-    public Vector3 posicionReal;
-}
-
-[Serializable]
-public struct ContenidoInformCuadroRobado
-{
-    public Vector3 posicionBase;
 }

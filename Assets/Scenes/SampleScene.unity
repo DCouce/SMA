@@ -20564,7 +20564,7 @@ GameObject:
   - component: {fileID: 305942266}
   - component: {fileID: 305942277}
   m_Layer: 0
-  m_Name: Guardia7 (Dron)
+  m_Name: Guardia6 (Dron)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -66988,7 +66988,7 @@ Transform:
   m_GameObject: {fileID: 964218465}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 9.285601, y: 0.1, z: 11.51211}
+  m_LocalPosition: {x: 8.035601, y: 0.1, z: 10.01211}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -78092,7 +78092,7 @@ Transform:
   m_GameObject: {fileID: 1180154055}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.66, y: 0.1, z: -5.08}
+  m_LocalPosition: {x: 5.91, y: 0.1, z: -1.0799999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -111015,7 +111015,7 @@ Transform:
   m_GameObject: {fileID: 1629963380}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.2856007, y: 0.1, z: 9.76211}
+  m_LocalPosition: {x: -2.7143993, y: 0.1, z: 4.2621098}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -120958,7 +120958,7 @@ Transform:
   m_GameObject: {fileID: 1772568813}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 10.285601, y: 0.1, z: 7.7621098}
+  m_LocalPosition: {x: 2.2856007, y: 0.1, z: 7.5121098}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

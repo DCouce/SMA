@@ -28,10 +28,15 @@ public class CapaComunicacion : MonoBehaviour
     private Zona   ultimaZonaCFP;
     private string convIdInformActual;
 
-    private bool   queryIfActivo        = false;
-    private bool   queryIfConfirmado    = false;
-    private string queryIfConvId        = null;
+    private bool   queryIfActivo          = false;
+    private bool   queryIfConfirmado      = false;
+    private string queryIfConvId          = null;
     private Vector3 posicionUltimoQueryIf = Vector3.positiveInfinity;
+
+    // Red ocupada: inferido por observación de CFPs ajenos
+    private bool  redOcupada         = false;
+    private float tRedOcupadaExpira  = 0f;
+    private const float TIMEOUT_RED  = 25f;
 
     void Awake()
     {
@@ -51,6 +56,8 @@ public class CapaComunicacion : MonoBehaviour
         }
         if (modelo != null)
             modelo.OnRuidoPercibido += AlEscucharRuido;
+        if (comms != null)
+            comms.OnCFPRecibido += MarcarRedOcupada;
     }
 
     void OnDisable()
@@ -63,6 +70,14 @@ public class CapaComunicacion : MonoBehaviour
         }
         if (modelo != null)
             modelo.OnRuidoPercibido -= AlEscucharRuido;
+        if (comms != null)
+            comms.OnCFPRecibido -= MarcarRedOcupada;
+    }
+
+    private void MarcarRedOcupada()
+    {
+        redOcupada        = true;
+        tRedOcupadaExpira = Time.time + TIMEOUT_RED;
     }
 
     private void AlVerLadron(Vector3 pos, bool llevaElCuadro)
@@ -81,20 +96,16 @@ public class CapaComunicacion : MonoBehaviour
         Debug.Log($"<color=orange>[CUADRO]</color> {gameObject.name}: " +
                   $"detecta que el cuadro no está. Difundiendo InformCuadroRobado.");
 
-        ContenidoInformCuadroRobado contenido = new ContenidoInformCuadroRobado
-        {
-            posicionBase = sensor.posicionBaseCuadro != null
-                ? sensor.posicionBaseCuadro.position
-                : Vector3.zero
-        };
+        Vector3 posBase = sensor.posicionBaseCuadro != null
+            ? sensor.posicionBaseCuadro.position
+            : Vector3.zero;
 
         MensajeFIPA inform = new MensajeFIPA(
             "inform", comms,
-            $"(cuadro-robado (posicion {sensor.posicionBaseCuadro?.position.x:F1} " +
-            $"{sensor.posicionBaseCuadro?.position.y:F1} {sensor.posicionBaseCuadro?.position.z:F1}))",
+            MensajeFIPA.ContentVec3(posBase),
             MensajeFIPA.GenerarConversationId(),
             "fipa-inform");
-        inform.contenidoObjeto = contenido;
+        inform.ontology = "robo";
 
         comms.Difundir(inform);
         modelo.RegistrarFaltaCuadro();
@@ -117,14 +128,11 @@ public class CapaComunicacion : MonoBehaviour
         queryIfConfirmado = false;
         queryIfConvId     = MensajeFIPA.GenerarConversationId();
 
-        ContenidoQueryIf contenido = new ContenidoQueryIf { posicionRuido = posicionRuido };
-
         MensajeFIPA queryIf = new MensajeFIPA(
             "query-if", comms,
-            $"(agente-en-posicion (coord {posicionRuido.x:F1} {posicionRuido.y:F1} {posicionRuido.z:F1}))",
+            MensajeFIPA.ContentVec3(posicionRuido),
             queryIfConvId,
             "fipa-query");
-        queryIf.contenidoObjeto = contenido;
 
         Debug.Log($"<color=yellow>[QUERY-IF]</color> {gameObject.name}: " +
                   $"ruido en {posicionRuido}. Lanzando QueryIf [conv:{queryIfConvId}]");
@@ -153,7 +161,9 @@ public class CapaComunicacion : MonoBehaviour
         Zona zonaActual = GestorZonas.Instance?.ObtenerZona(pos);
         if (zonaActual == null || zonaActual.puntosEntrada.Length == 0) return;
         if (zonaActual == ultimaZonaCFP) return;
+        if (redOcupada && Time.time < tRedOcupadaExpira) return;
 
+        redOcupada    = false;
         ultimaZonaCFP = zonaActual;
         EnviarInformCambioZona(pos, llevaElCuadro, zonaActual.nombreZona);
 
@@ -166,26 +176,19 @@ public class CapaComunicacion : MonoBehaviour
         }
     }
 
+
     private void EnviarInformCambioZona(Vector3 pos, bool llevaElCuadro, string zonaNombre)
     {
         if (comms == null) return;
 
         convIdInformActual = MensajeFIPA.GenerarConversationId();
 
-        ContenidoInformPosicion contenido = new ContenidoInformPosicion
-        {
-            posicion      = pos,
-            llevaElCuadro = llevaElCuadro
-        };
-
         MensajeFIPA inform = new MensajeFIPA(
             "inform", comms,
-            $"(ubicacion ladron (coord {pos.x:F1} {pos.y:F1} {pos.z:F1})) " +
-            $"(zona {zonaNombre}) " +
-            $"(lleva-cuadro {llevaElCuadro.ToString().ToLower()})",
+            MensajeFIPA.ContentInformPosicion(pos, llevaElCuadro),
             convIdInformActual,
             "fipa-inform");
-        inform.contenidoObjeto = contenido;
+        inform.ontology = "posicion-ladron";
 
         comms.Difundir(inform);
     }
